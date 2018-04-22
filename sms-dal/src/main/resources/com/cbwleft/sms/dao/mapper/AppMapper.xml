@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cbwleft.sms.dao.mapper.AppMapper">
+  <resultMap id="BaseResultMap" type="com.cbwleft.sms.dao.model.App">
+    <id column="id" jdbcType="TINYINT" property="id" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="private_key" jdbcType="VARCHAR" property="privateKey" />
+    <result column="prefix" jdbcType="VARCHAR" property="prefix" />
+    <result column="validate_code_length" jdbcType="TINYINT" property="validateCodeLength" />
+    <result column="channel_params" jdbcType="VARCHAR" property="channelParams" />
+    <result column="create_date" jdbcType="TIMESTAMP" property="createDate" />
+    <result column="update_date" jdbcType="TIMESTAMP" property="updateDate" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, name, private_key, prefix, validate_code_length, channel_params, create_date, 
+    update_date
+  </sql>
+  <select id="selectByExample" parameterType="com.cbwleft.sms.dao.model.AppExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from t_app
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+    <if test="limit != null">
+      <if test="offset != null">
+        limit ${offset}, ${limit}
+      </if>
+      <if test="offset == null">
+        limit ${limit}
+      </if>
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Byte" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_app
+    where id = #{id,jdbcType=TINYINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Byte">
+    delete from t_app
+    where id = #{id,jdbcType=TINYINT}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.cbwleft.sms.dao.model.AppExample">
+    delete from t_app
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.cbwleft.sms.dao.model.App">
+    insert into t_app (id, name, private_key, 
+      prefix, validate_code_length, channel_params, 
+      create_date, update_date)
+    values (#{id,jdbcType=TINYINT}, #{name,jdbcType=VARCHAR}, #{privateKey,jdbcType=VARCHAR}, 
+      #{prefix,jdbcType=VARCHAR}, #{validateCodeLength,jdbcType=TINYINT}, #{channelParams,jdbcType=VARCHAR}, 
+      #{createDate,jdbcType=TIMESTAMP}, #{updateDate,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.cbwleft.sms.dao.model.App">
+    insert into t_app
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="name != null">
+        name,
+      </if>
+      <if test="privateKey != null">
+        private_key,
+      </if>
+      <if test="prefix != null">
+        prefix,
+      </if>
+      <if test="validateCodeLength != null">
+        validate_code_length,
+      </if>
+      <if test="channelParams != null">
+        channel_params,
+      </if>
+      <if test="createDate != null">
+        create_date,
+      </if>
+      <if test="updateDate != null">
+        update_date,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=TINYINT},
+      </if>
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="privateKey != null">
+        #{privateKey,jdbcType=VARCHAR},
+      </if>
+      <if test="prefix != null">
+        #{prefix,jdbcType=VARCHAR},
+      </if>
+      <if test="validateCodeLength != null">
+        #{validateCodeLength,jdbcType=TINYINT},
+      </if>
+      <if test="channelParams != null">
+        #{channelParams,jdbcType=VARCHAR},
+      </if>
+      <if test="createDate != null">
+        #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateDate != null">
+        #{updateDate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.cbwleft.sms.dao.model.AppExample" resultType="java.lang.Long">
+    select count(*) from t_app
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update t_app
+    <set>
+      <if test="record.id != null">
+        id = #{record.id,jdbcType=TINYINT},
+      </if>
+      <if test="record.name != null">
+        name = #{record.name,jdbcType=VARCHAR},
+      </if>
+      <if test="record.privateKey != null">
+        private_key = #{record.privateKey,jdbcType=VARCHAR},
+      </if>
+      <if test="record.prefix != null">
+        prefix = #{record.prefix,jdbcType=VARCHAR},
+      </if>
+      <if test="record.validateCodeLength != null">
+        validate_code_length = #{record.validateCodeLength,jdbcType=TINYINT},
+      </if>
+      <if test="record.channelParams != null">
+        channel_params = #{record.channelParams,jdbcType=VARCHAR},
+      </if>
+      <if test="record.createDate != null">
+        create_date = #{record.createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.updateDate != null">
+        update_date = #{record.updateDate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update t_app
+    set id = #{record.id,jdbcType=TINYINT},
+      name = #{record.name,jdbcType=VARCHAR},
+      private_key = #{record.privateKey,jdbcType=VARCHAR},
+      prefix = #{record.prefix,jdbcType=VARCHAR},
+      validate_code_length = #{record.validateCodeLength,jdbcType=TINYINT},
+      channel_params = #{record.channelParams,jdbcType=VARCHAR},
+      create_date = #{record.createDate,jdbcType=TIMESTAMP},
+      update_date = #{record.updateDate,jdbcType=TIMESTAMP}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.cbwleft.sms.dao.model.App">
+    update t_app
+    <set>
+      <if test="name != null">
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="privateKey != null">
+        private_key = #{privateKey,jdbcType=VARCHAR},
+      </if>
+      <if test="prefix != null">
+        prefix = #{prefix,jdbcType=VARCHAR},
+      </if>
+      <if test="validateCodeLength != null">
+        validate_code_length = #{validateCodeLength,jdbcType=TINYINT},
+      </if>
+      <if test="channelParams != null">
+        channel_params = #{channelParams,jdbcType=VARCHAR},
+      </if>
+      <if test="createDate != null">
+        create_date = #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateDate != null">
+        update_date = #{updateDate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=TINYINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.cbwleft.sms.dao.model.App">
+    update t_app
+    set name = #{name,jdbcType=VARCHAR},
+      private_key = #{privateKey,jdbcType=VARCHAR},
+      prefix = #{prefix,jdbcType=VARCHAR},
+      validate_code_length = #{validateCodeLength,jdbcType=TINYINT},
+      channel_params = #{channelParams,jdbcType=VARCHAR},
+      create_date = #{createDate,jdbcType=TIMESTAMP},
+      update_date = #{updateDate,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=TINYINT}
+  </update>
+</mapper>
