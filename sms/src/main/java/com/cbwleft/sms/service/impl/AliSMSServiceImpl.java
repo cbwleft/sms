@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -122,20 +123,23 @@ public class AliSMSServiceImpl implements IChannelSMSService {
 					return new QuerySendResult(true, Constants.SendStatus.FAILURE, null, null, "no match send record");
 				}
 				SmsSendDetailDTO smsSendDetailDTO = list.get(0);
+				logger.info("短信查询结果为:{}", new ObjectMapper().writeValueAsString(smsSendDetailDTO));
 				int aliSendStatus = smsSendDetailDTO.getSendStatus().intValue();// 1：等待回执，2：发送失败，3：发送成功
 				byte sendStatus = 0;
 				Date reciveDate = null;
+				String failCode = null;
 				if (aliSendStatus == 1) {
 					sendStatus = Constants.SendStatus.SENDING;
 				} else if (aliSendStatus == 2) {
 					sendStatus = Constants.SendStatus.FAILURE;
+					failCode = smsSendDetailDTO.getErrCode();
 				} else if (aliSendStatus == 3) {
-					reciveDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss")// 2017-05-25 00:00:00
+					reciveDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")// 2017-05-25 00:00:00
 							.parse(smsSendDetailDTO.getReceiveDate());
 					sendStatus = Constants.SendStatus.SUCCESS;
 				}
 				return new QuerySendResult(true, sendStatus, smsSendDetailDTO.getContent(), reciveDate,
-						smsSendDetailDTO.getErrCode());
+						failCode);
 			} else {
 				return new QuerySendResult(false);
 			}

@@ -93,10 +93,15 @@ public class MessageServiceImpl implements IMessageService {
 		Template template = templateMapper.selectByPrimaryKey(message.getTemplateId());
 		App app = appMapper.selectByPrimaryKey(template.getAppId());
 		QuerySendResult querySendResult = channelSMSService.querySendStatus(app, message);
-		if(querySendResult.isSuccess()) {
+		if (querySendResult.isSuccess() && Constants.SendStatus.SENDING != querySendResult.getSendStatus()) {
 			Message updateMessage = new Message();
 			updateMessage.setId(message.getId());
 			updateMessage.setSendStatus(querySendResult.getSendStatus());
+			if (Constants.SendStatus.FAILURE == querySendResult.getSendStatus()) {
+				updateMessage.setFailCode(querySendResult.getFailCode());
+			}else if(Constants.SendStatus.SUCCESS == querySendResult.getSendStatus()) {
+				updateMessage.setReciveDate(querySendResult.getReceiveDate());
+			}
 			int result = messageMapper.updateByPrimaryKeySelective(updateMessage);
 			logger.info("{}更新结果{}", message, result);
 		}
