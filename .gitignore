@@ -1,1 +1,4 @@
 /.project/
+*.project
+*.prefs
+*.DS_Store

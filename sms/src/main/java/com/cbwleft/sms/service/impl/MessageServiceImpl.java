@@ -89,14 +89,15 @@ public class MessageServiceImpl implements IMessageService {
 	}
 	
 	@Override
-	public QuerySendResult queryAndUpdateSendStatus(int messageId) {
-		Message message = messageMapper.selectByPrimaryKey(messageId);
+	public QuerySendResult queryAndUpdateSendStatus(Message message) {
 		Template template = templateMapper.selectByPrimaryKey(message.getTemplateId());
 		App app = appMapper.selectByPrimaryKey(template.getAppId());
 		QuerySendResult querySendResult = channelSMSService.querySendStatus(app, message);
 		if(querySendResult.isSuccess()) {
-			message.setSendStatus(querySendResult.getSendStatus());
-			int result = messageMapper.updateByPrimaryKey(message);
+			Message updateMessage = new Message();
+			updateMessage.setId(message.getId());
+			updateMessage.setSendStatus(querySendResult.getSendStatus());
+			int result = messageMapper.updateByPrimaryKeySelective(updateMessage);
 			logger.info("{}更新结果{}", message, result);
 		}
 		return querySendResult;
@@ -168,6 +169,16 @@ public class MessageServiceImpl implements IMessageService {
 		} else {
 			return list.get(0);
 		}
+	}
+
+	@Override
+	public List<Message> querySendingMessages() {
+		MessageExample example = new MessageExample();
+		example.setLimit(100);
+		example.setOrderByClause("create_date desc");
+		example.createCriteria()
+			.andSendStatusEqualTo(Constants.SendStatus.SENDING);
+		return messageMapper.selectByExample(example);
 	}
 
 }

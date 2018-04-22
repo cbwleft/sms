@@ -1,5 +1,7 @@
 package com.cbwleft.sms.service;
 
+import java.util.List;
+
 import com.cbwleft.sms.dao.model.Message;
 import com.cbwleft.sms.dao.model.Template;
 import com.cbwleft.sms.model.dto.MessageDTO;
@@ -47,8 +49,14 @@ public interface IMessageService {
 
 	/**
 	 * 查询并更新发送状态
-	 * @param messageId
+	 * @param message
 	 * @return TODO
 	 */
-	public QuerySendResult queryAndUpdateSendStatus(int messageId);
+	public QuerySendResult queryAndUpdateSendStatus(Message message);
+
+	/**
+	 * 查询发送中的短信
+	 * @return
+	 */
+	public List<Message> querySendingMessages();
 }
