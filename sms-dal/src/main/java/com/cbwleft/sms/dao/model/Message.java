@@ -61,11 +61,18 @@ public class Message implements Serializable {
     private String failCode;
 
     /**
-     * 第三方平台短信查询id
+     * 短信平台id
      *
      * @mbg.generated
      */
     private String bizId;
+
+    /**
+     * 收到短信时间
+     *
+     * @mbg.generated
+     */
+    private Date reciveDate;
 
     /**
      * 创建时间
@@ -155,6 +162,14 @@ public class Message implements Serializable {
         this.bizId = bizId;
     }
 
+    public Date getReciveDate() {
+        return reciveDate;
+    }
+
+    public void setReciveDate(Date reciveDate) {
+        this.reciveDate = reciveDate;
+    }
+
     public Date getCreateDate() {
         return createDate;
     }
@@ -186,6 +201,7 @@ public class Message implements Serializable {
         sb.append(", validateStatus=").append(validateStatus);
         sb.append(", failCode=").append(failCode);
         sb.append(", bizId=").append(bizId);
+        sb.append(", reciveDate=").append(reciveDate);
         sb.append(", createDate=").append(createDate);
         sb.append(", updateDate=").append(updateDate);
         sb.append("]");
@@ -213,6 +229,7 @@ public class Message implements Serializable {
             && (this.getValidateStatus() == null ? other.getValidateStatus() == null : this.getValidateStatus().equals(other.getValidateStatus()))
             && (this.getFailCode() == null ? other.getFailCode() == null : this.getFailCode().equals(other.getFailCode()))
             && (this.getBizId() == null ? other.getBizId() == null : this.getBizId().equals(other.getBizId()))
+            && (this.getReciveDate() == null ? other.getReciveDate() == null : this.getReciveDate().equals(other.getReciveDate()))
             && (this.getCreateDate() == null ? other.getCreateDate() == null : this.getCreateDate().equals(other.getCreateDate()))
             && (this.getUpdateDate() == null ? other.getUpdateDate() == null : this.getUpdateDate().equals(other.getUpdateDate()));
     }
@@ -230,6 +247,7 @@ public class Message implements Serializable {
         result = prime * result + ((getValidateStatus() == null) ? 0 : getValidateStatus().hashCode());
         result = prime * result + ((getFailCode() == null) ? 0 : getFailCode().hashCode());
         result = prime * result + ((getBizId() == null) ? 0 : getBizId().hashCode());
+        result = prime * result + ((getReciveDate() == null) ? 0 : getReciveDate().hashCode());
         result = prime * result + ((getCreateDate() == null) ? 0 : getCreateDate().hashCode());
         result = prime * result + ((getUpdateDate() == null) ? 0 : getUpdateDate().hashCode());
         return result;

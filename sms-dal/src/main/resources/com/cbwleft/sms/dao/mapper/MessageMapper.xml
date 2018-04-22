@@ -11,6 +11,7 @@
     <result column="validate_status" jdbcType="TINYINT" property="validateStatus" />
     <result column="fail_code" jdbcType="VARCHAR" property="failCode" />
     <result column="biz_id" jdbcType="VARCHAR" property="bizId" />
+    <result column="recive_date" jdbcType="TIMESTAMP" property="reciveDate" />
     <result column="create_date" jdbcType="TIMESTAMP" property="createDate" />
     <result column="update_date" jdbcType="TIMESTAMP" property="updateDate" />
   </resultMap>
@@ -74,7 +75,7 @@
   </sql>
   <sql id="Base_Column_List">
     id, mobile, params, validate_code, template_id, send_status, validate_status, fail_code, 
-    biz_id, create_date, update_date
+    biz_id, recive_date, create_date, update_date
   </sql>
   <select id="selectByExample" parameterType="com.cbwleft.sms.dao.model.MessageExample" resultMap="BaseResultMap">
     select
@@ -118,11 +119,13 @@
     insert into t_message (id, mobile, params, 
       validate_code, template_id, send_status, 
       validate_status, fail_code, biz_id, 
-      create_date, update_date)
+      recive_date, create_date, update_date
+      )
     values (#{id,jdbcType=INTEGER}, #{mobile,jdbcType=VARCHAR}, #{params,jdbcType=VARCHAR}, 
       #{validateCode,jdbcType=VARCHAR}, #{templateId,jdbcType=SMALLINT}, #{sendStatus,jdbcType=TINYINT}, 
       #{validateStatus,jdbcType=TINYINT}, #{failCode,jdbcType=VARCHAR}, #{bizId,jdbcType=VARCHAR}, 
-      #{createDate,jdbcType=TIMESTAMP}, #{updateDate,jdbcType=TIMESTAMP})
+      #{reciveDate,jdbcType=TIMESTAMP}, #{createDate,jdbcType=TIMESTAMP}, #{updateDate,jdbcType=TIMESTAMP}
+      )
   </insert>
   <insert id="insertSelective" parameterType="com.cbwleft.sms.dao.model.Message">
     insert into t_message
@@ -153,6 +156,9 @@
       </if>
       <if test="bizId != null">
         biz_id,
+      </if>
+      <if test="reciveDate != null">
+        recive_date,
       </if>
       <if test="createDate != null">
         create_date,
@@ -188,6 +194,9 @@
       </if>
       <if test="bizId != null">
         #{bizId,jdbcType=VARCHAR},
+      </if>
+      <if test="reciveDate != null">
+        #{reciveDate,jdbcType=TIMESTAMP},
       </if>
       <if test="createDate != null">
         #{createDate,jdbcType=TIMESTAMP},
@@ -233,6 +242,9 @@
       <if test="record.bizId != null">
         biz_id = #{record.bizId,jdbcType=VARCHAR},
       </if>
+      <if test="record.reciveDate != null">
+        recive_date = #{record.reciveDate,jdbcType=TIMESTAMP},
+      </if>
       <if test="record.createDate != null">
         create_date = #{record.createDate,jdbcType=TIMESTAMP},
       </if>
@@ -255,6 +267,7 @@
       validate_status = #{record.validateStatus,jdbcType=TINYINT},
       fail_code = #{record.failCode,jdbcType=VARCHAR},
       biz_id = #{record.bizId,jdbcType=VARCHAR},
+      recive_date = #{record.reciveDate,jdbcType=TIMESTAMP},
       create_date = #{record.createDate,jdbcType=TIMESTAMP},
       update_date = #{record.updateDate,jdbcType=TIMESTAMP}
     <if test="_parameter != null">
@@ -288,6 +301,9 @@
       <if test="bizId != null">
         biz_id = #{bizId,jdbcType=VARCHAR},
       </if>
+      <if test="reciveDate != null">
+        recive_date = #{reciveDate,jdbcType=TIMESTAMP},
+      </if>
       <if test="createDate != null">
         create_date = #{createDate,jdbcType=TIMESTAMP},
       </if>
@@ -307,6 +323,7 @@
       validate_status = #{validateStatus,jdbcType=TINYINT},
       fail_code = #{failCode,jdbcType=VARCHAR},
       biz_id = #{bizId,jdbcType=VARCHAR},
+      recive_date = #{reciveDate,jdbcType=TIMESTAMP},
       create_date = #{createDate,jdbcType=TIMESTAMP},
       update_date = #{updateDate,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=INTEGER}

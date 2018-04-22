@@ -718,6 +718,66 @@ public class MessageExample implements Serializable {
             return (Criteria) this;
         }
 
+        public Criteria andReciveDateIsNull() {
+            addCriterion("recive_date is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andReciveDateIsNotNull() {
+            addCriterion("recive_date is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andReciveDateEqualTo(Date value) {
+            addCriterion("recive_date =", value, "reciveDate");
+            return (Criteria) this;
+        }
+
+        public Criteria andReciveDateNotEqualTo(Date value) {
+            addCriterion("recive_date <>", value, "reciveDate");
+            return (Criteria) this;
+        }
+
+        public Criteria andReciveDateGreaterThan(Date value) {
+            addCriterion("recive_date >", value, "reciveDate");
+            return (Criteria) this;
+        }
+
+        public Criteria andReciveDateGreaterThanOrEqualTo(Date value) {
+            addCriterion("recive_date >=", value, "reciveDate");
+            return (Criteria) this;
+        }
+
+        public Criteria andReciveDateLessThan(Date value) {
+            addCriterion("recive_date <", value, "reciveDate");
+            return (Criteria) this;
+        }
+
+        public Criteria andReciveDateLessThanOrEqualTo(Date value) {
+            addCriterion("recive_date <=", value, "reciveDate");
+            return (Criteria) this;
+        }
+
+        public Criteria andReciveDateIn(List<Date> values) {
+            addCriterion("recive_date in", values, "reciveDate");
+            return (Criteria) this;
+        }
+
+        public Criteria andReciveDateNotIn(List<Date> values) {
+            addCriterion("recive_date not in", values, "reciveDate");
+            return (Criteria) this;
+        }
+
+        public Criteria andReciveDateBetween(Date value1, Date value2) {
+            addCriterion("recive_date between", value1, value2, "reciveDate");
+            return (Criteria) this;
+        }
+
+        public Criteria andReciveDateNotBetween(Date value1, Date value2) {
+            addCriterion("recive_date not between", value1, value2, "reciveDate");
+            return (Criteria) this;
+        }
+
         public Criteria andCreateDateIsNull() {
             addCriterion("create_date is null");
             return (Criteria) this;
