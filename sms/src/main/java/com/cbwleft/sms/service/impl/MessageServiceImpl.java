@@ -103,7 +103,7 @@ public class MessageServiceImpl implements IMessageService {
 				updateMessage.setReciveDate(querySendResult.getReceiveDate());
 			}
 			int result = messageMapper.updateByPrimaryKeySelective(updateMessage);
-			logger.info("{}更新结果{}", message, result);
+			logger.info("{}更新发送状态结果{}", updateMessage, result);
 		}
 		return querySendResult;
 	}
@@ -155,7 +155,7 @@ public class MessageServiceImpl implements IMessageService {
 		MessageExample example = new MessageExample();
 		example.createCriteria().andIdEqualTo(message.getId()).andValidateStatusEqualTo(message.getValidateStatus());// CAS
 		int result = messageMapper.updateByExampleSelective(updateMessage, example);
-		logger.info("{}更新结果{}", message, result);
+		logger.info("{}更新验证码状态结果{}", message, result);
 		return result;
 	}
 
