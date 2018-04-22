@@ -1,6 +1,7 @@
 package com.cbwleft.sms.service.impl;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.aliyuncs.DefaultAcsClient;
@@ -44,7 +46,7 @@ public class AliSMSServiceImpl implements IChannelSMSService {
 
 	@Autowired
 	private IMessageService messageService;
-	
+
 	@Override
 	public SendMessageResult send(App app, Template template, MessageDTO message) {
 		IAcsClient acsClient = null;
@@ -101,52 +103,60 @@ public class AliSMSServiceImpl implements IChannelSMSService {
 			AliSMSConfig config = new ObjectMapper().readValue(channelParams, AliSMSConfig.class);
 			IAcsClient acsClient = config.acsClient();
 			QuerySendDetailsRequest request = new QuerySendDetailsRequest();
-	        //必填-号码
-	        request.setPhoneNumber(message.getMobile());
-	        //可选-调用发送短信接口时返回的BizId
-	        request.setBizId(message.getBizId());
-	        //必填-短信发送的日期 支持30天内记录查询（可查其中一天的发送数据），格式yyyyMMdd
-	        request.setSendDate(new SimpleDateFormat("yyyyMMdd").format(message.getCreateDate()));
-	        //必填-页大小
-	        request.setPageSize(1L);
-	        //必填-当前页码从1开始计数
-	        request.setCurrentPage(1L);
-	        //hint 此处可能会抛出异常，注意catch
-	        QuerySendDetailsResponse querySendDetailsResponse = acsClient.getAcsResponse(request);
-	        //获取返回结果
-	        if("OK".equals(querySendDetailsResponse.getCode())){
-	        	List<SmsSendDetailDTO> list = querySendDetailsResponse.getSmsSendDetailDTOs();
-	        	SmsSendDetailDTO smsSendDetailDTO = list.get(0);
-	        	int aliSendStatus = smsSendDetailDTO.getSendStatus().intValue();//1：等待回执，2：发送失败，3：发送成功
-	        	byte sendStatus = 0;
-	        	if(aliSendStatus == 1) {
-	        		sendStatus = Constants.SendStatus.SENDING;
-	        	}else if(aliSendStatus == 2) {
-	        		sendStatus = Constants.SendStatus.FAILURE;
-	        	}else if(aliSendStatus == 3) {
-	        		sendStatus = Constants.SendStatus.SUCCESS;
-	        	}
-	        	return new QuerySendResult(true, sendStatus, smsSendDetailDTO.getContent());
-	        }else {
-	        	return new QuerySendResult(false, (byte) 0, null);
-	        }
+			// 必填-号码
+			request.setPhoneNumber(message.getMobile());
+			// 可选-调用发送短信接口时返回的BizId
+			request.setBizId(message.getBizId());
+			// 必填-短信发送的日期 支持30天内记录查询（可查其中一天的发送数据），格式yyyyMMdd
+			request.setSendDate(new SimpleDateFormat("yyyyMMdd").format(message.getCreateDate()));
+			// 必填-页大小
+			request.setPageSize(1L);
+			// 必填-当前页码从1开始计数
+			request.setCurrentPage(1L);
+			// hint 此处可能会抛出异常，注意catch
+			QuerySendDetailsResponse querySendDetailsResponse = acsClient.getAcsResponse(request);
+			// 获取返回结果
+			if ("OK".equals(querySendDetailsResponse.getCode())) {
+				List<SmsSendDetailDTO> list = querySendDetailsResponse.getSmsSendDetailDTOs();
+				if (CollectionUtils.isEmpty(list)) {
+					return new QuerySendResult(true, Constants.SendStatus.FAILURE, null, null, "no match send record");
+				}
+				SmsSendDetailDTO smsSendDetailDTO = list.get(0);
+				int aliSendStatus = smsSendDetailDTO.getSendStatus().intValue();// 1：等待回执，2：发送失败，3：发送成功
+				byte sendStatus = 0;
+				Date reciveDate = null;
+				if (aliSendStatus == 1) {
+					sendStatus = Constants.SendStatus.SENDING;
+				} else if (aliSendStatus == 2) {
+					sendStatus = Constants.SendStatus.FAILURE;
+				} else if (aliSendStatus == 3) {
+					reciveDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss")// 2017-05-25 00:00:00
+							.parse(smsSendDetailDTO.getReceiveDate());
+					sendStatus = Constants.SendStatus.SUCCESS;
+				}
+				return new QuerySendResult(true, sendStatus, smsSendDetailDTO.getContent(), reciveDate,
+						smsSendDetailDTO.getErrCode());
+			} else {
+				return new QuerySendResult(false);
+			}
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			logger.error("查询短信接口异常", e);
+			return new QuerySendResult(false);
 		}
 	}
-	
+
 	private static class AliSMSConfig {
 
 		private final String product = "Dysmsapi";// 短信API产品名称（短信产品名固定，无需修改）
 		private final String domain = "dysmsapi.aliyuncs.com";// 短信API产品域名（接口地址固定，无需修改）
 		private String accessKeyId;// 你的accessKeyId,参考本文档步骤2
 		private String accessKeySecret;// 你的accessKeySecret，参考本文档步骤2
-		
+
 		@SuppressWarnings("unused")
 		public void setAccessKeyId(String accessKeyId) {
 			this.accessKeyId = accessKeyId;
 		}
-		
+
 		@SuppressWarnings("unused")
 		public void setAccessKeySecret(String accessKeySecret) {
 			this.accessKeySecret = accessKeySecret;
@@ -158,7 +168,7 @@ public class AliSMSServiceImpl implements IChannelSMSService {
 			IAcsClient acsClient = new DefaultAcsClient(profile);
 			return acsClient;
 		}
-		
+
 	}
 
 }

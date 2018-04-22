@@ -161,7 +161,7 @@ public class MessageServiceImpl implements IMessageService {
 		example.setLimit(1);
 		example.setOrderByClause("create_date desc");
 		example.createCriteria().andMobileEqualTo(mobile).andTemplateIdEqualTo(template.getId())
-				.andCreateDateGreaterThan(new Date(expire.toEpochMilli()))// 这里是拿应用服务器与数据库服务器时间做比较，注意时区和时间同步
+				.andCreateDateGreaterThan(Date.from(expire))// 这里是拿应用服务器与数据库服务器时间做比较，注意时区和时间同步
 				.andSendStatusGreaterThan(Constants.SendStatus.FAILURE);
 		List<Message> list = messageMapper.selectByExample(example);
 		if (CollectionUtils.isEmpty(list)) {
