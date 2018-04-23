@@ -53,3 +53,7 @@ CREATE TABLE `t_message` (
   `update_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4;
+
+-- 测试数据
+INSERT INTO t_app (id, name, private_key, prefix, validate_code_length, channel_params) VALUES (1, '应用1', '1', '短信前缀', 4, '{\"accessKeyId\":\"你的accessKeyId\",\"accessKeySecret\":\"你的accessKeySecret\"}');
+INSERT INTO t_template (id, channel_template_no, name, type, template, validate_code_key, validate_code_expire, app_id) VALUES (1, 'SMS_32505088', '用户注册验证码', 0, '验证码${code}，您正在注册成为${product}用户，感谢您的支持！', 'code', '300', 1);
