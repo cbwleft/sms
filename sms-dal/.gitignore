@@ -1,5 +1,5 @@
 /.classpath
+/.settings/
 /.project/
 /target/
-*.project
 *.DS_Store

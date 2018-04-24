@@ -17,7 +17,7 @@
 ### 项目结构
 ```
 sms-parent
-├── sms -- spring boot启动入口
+├── sms-web -- spring boot启动入口
 ├── sms-dal -- 数据持久层
 ├── sms-mgr -- 管理后台(开发中)
 ```
