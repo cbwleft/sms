@@ -9,12 +9,10 @@
     <!-- 驱动包 -->
     <classPathEntry location="${classPathEntry}" />
 
-    <context id="MysqlContext" targetRuntime="MyBatis3" defaultModelType="flat">
+    <context id="MysqlContext" targetRuntime="MyBatis3Simple" defaultModelType="flat">
 
         <property name="javaFileEncoding" value="UTF-8"/>
-        <!-- 由于beginningDelimiter和endingDelimiter的默认值为双引号(")，在Mysql中不能这么写，所以还要将这两个默认值改为`  -->
-        <property name="beginningDelimiter" value="`"/>
-        <property name="endingDelimiter" value="`"/>
+        <property name="useMapperCommentGenerator" value="false"/>
 
         <property name="useActualColumnNames" value="false" />
         
@@ -24,20 +22,28 @@
         <!-- Java模型生成equals和hashcode方法 -->
         <plugin type="org.mybatis.generator.plugins.EqualsHashCodePlugin"></plugin>
         
-        <!-- 为生成的Java模型类添加序列化接口，并生成serialVersionUID字段 -->
-        <plugin type="com.cbwleft.sms.dao.plugin.SerializablePlugin">
-            <property name="suppressJavaInterface" value="false"/>
+        <plugin type="tk.mybatis.mapper.generator.MapperPlugin">
+            <property name="mappers" value="tk.mybatis.mapper.common.Mapper"/>
+            <property name="caseSensitive" value="true"/>
+            <property name="forceAnnotation" value="true"/>
+            <property name="beginningDelimiter" value="`"/>
+            <property name="endingDelimiter" value="`"/>
         </plugin>
+        
+        <!-- 为生成的Java模型类添加序列化接口，并生成serialVersionUID字段 -->
+        <!-- <plugin type="com.cbwleft.sms.dao.plugin.SerializablePlugin">
+            <property name="suppressJavaInterface" value="false"/>
+        </plugin> -->
 
         <!-- 生成一个新的selectByExample方法，这个方法可以接收offset和limit参数，主要用来实现分页 -->
-        <plugin type="com.cbwleft.sms.dao.plugin.PaginationPlugin"></plugin>
+        <!-- <plugin type="com.cbwleft.sms.dao.plugin.PaginationPlugin"></plugin> -->
 
                         
         <!-- 生成的代码去掉注释 -->
-        <commentGenerator type="com.cbwleft.sms.dao.plugin.CommentGenerator">
+        <!-- <commentGenerator type="com.cbwleft.sms.dao.plugin.CommentGenerator">
             <property name="suppressAllComments" value="true"/>
             <property name="suppressDate" value="true"/>
-        </commentGenerator>
+        </commentGenerator> -->
         
         <!-- 数据库连接 -->
         <jdbcConnection driverClass="${generator.jdbc.driver}"
@@ -46,17 +52,23 @@
                         password="${generator.jdbc.password}"/>
 
         <!-- model生成 -->
-        <javaModelGenerator targetPackage="com.cbwleft.sms.dao.model" targetProject="sms-dal/src/main/java"/>
+        <javaModelGenerator targetPackage="com.cbwleft.sms.dao.model" targetProject="src/main/java"/>
 
         <!-- MapperXML生成 -->
-        <sqlMapGenerator targetPackage="com.cbwleft.sms.dao.mapper" targetProject="sms-dal/src/main/resources"/>
+        <sqlMapGenerator targetPackage="com.cbwleft.sms.dao.mapper" targetProject="src/main/resources"/>
 
         <!-- Mapper接口生成 -->
-        <javaClientGenerator targetPackage="com.cbwleft.sms.dao.mapper" targetProject="sms-dal/src/main/java" type="XMLMAPPER"/>
+        <javaClientGenerator targetPackage="com.cbwleft.sms.dao.mapper" targetProject="src/main/java" type="XMLMAPPER"/>
 
-        <table tableName="t_app" domainObjectName="App"></table>
-        <table tableName="t_template" domainObjectName="Template"></table>
-        <table tableName="t_message" domainObjectName="Message"></table>
+        <table tableName="t_app" domainObjectName="App">
+        	<generatedKey column="Id" sqlStatement="JDBC"/>
+        </table>
+        <table tableName="t_template" domainObjectName="Template">
+        	<generatedKey column="Id" sqlStatement="JDBC"/>
+        </table>
+        <table tableName="t_message" domainObjectName="Message">
+        	<generatedKey column="Id" sqlStatement="JDBC"/>
+        </table>
         
     </context>
     

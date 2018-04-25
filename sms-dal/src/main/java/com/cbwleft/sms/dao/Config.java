@@ -1,7 +1,8 @@
 package com.cbwleft.sms.dao;
 
-import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Configuration;
+
+import tk.mybatis.spring.annotation.MapperScan;
 
 @Configuration
 @MapperScan("com.cbwleft.sms.dao.mapper")
