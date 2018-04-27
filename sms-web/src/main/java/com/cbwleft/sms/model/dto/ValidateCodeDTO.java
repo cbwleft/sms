@@ -1,10 +1,9 @@
 package com.cbwleft.sms.model.dto;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.Pattern;
-
 import org.hibernate.validator.constraints.Length;
+
+import com.cbwleft.sms.model.validation.Mobile;
+import com.cbwleft.sms.model.validation.TemplateId;
 
 
 public class ValidateCodeDTO {
@@ -12,20 +11,19 @@ public class ValidateCodeDTO {
 	/**
 	 * 手机号码
 	 */
-	@Pattern(regexp = "[1][0-9]{10}", message = "手机号码格式不正确")
+	@Mobile
 	private String mobile;
 
 	/**
 	 * 模板id
 	 */
-	@Min(value = 0, message = "模板id格式不正确")
-	@Max(value = Short.MAX_VALUE, message = "模板id格式不正确")
+	@TemplateId
 	private String templateId;
 
 	/**
 	 * 验证码
 	 */
-	@Length(min = 4, max = 6, message = "验证码长度不正确")
+	@Length(min = 4, max = 6, message = "{com.cbwleft.sms.constraints.ValidateCode.messsage}")
 	private String validateCode;
 
 	public String getMobile() {

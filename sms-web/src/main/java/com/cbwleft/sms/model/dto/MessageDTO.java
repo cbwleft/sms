@@ -5,21 +5,22 @@ import java.util.Map;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.Pattern;
+
+import com.cbwleft.sms.model.validation.Mobile;
+import com.cbwleft.sms.model.validation.TemplateId;
 
 public class MessageDTO {
 
 	/**
 	 * 手机号码
 	 */
-	@Pattern(regexp = "[1][0-9]{10}" , message = "手机号码格式不正确")
+	@Mobile
 	private String mobile;
 
 	/**
 	 * 模板id
 	 */
-	@Min(value = 0 ,message = "模板id格式不正确")
-	@Max(value = Short.MAX_VALUE ,message = "模板id格式不正确")
+	@TemplateId
 	private String templateId;
 
 	/**
