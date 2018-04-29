@@ -24,4 +24,4 @@ sms-parent
 ### 项目测试
 1、运行sms.sql（需要mysql 5.6以上）<br>
 2、修改application.yml中的数据库地址<br>
-3、运行sms工程，访问[http://localhost:8080/swagger-ui.html#/](http://localhost:8080/swagger-ui.html#/)进行接口测试
+3、运行sms工程，访问[http://localhost:8000/swagger-ui.html#/](http://localhost:8000/swagger-ui.html#/)进行接口测试
