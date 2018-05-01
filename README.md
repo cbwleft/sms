@@ -17,7 +17,7 @@
 ### 如何接入
 如果您正在使用[Spring Cloud](https://projects.spring.io/spring-cloud/ "spring cloud")，只需要在sms工程的pom中增加spring-cloud-dependencies、spring-cloud-starter-eureka的依赖。<br>
 如果您没有使用Spring Cloud，Spring Boot可以很方便地作为单体应用或者集群部署，配合nginx等反向代理进行远程调用使用。<br>
-如果您没有使用**阿里云通讯**，该工程将对短信SDK的依赖限制在sms工程的AliSMSServiceImpl类中，您只需要通过实现IChannelSMSService接口就可以很方便地进行短信平台的替换。
+**如果您没有使用阿里云通讯**，该工程将对短信SDK的依赖限制在sms工程的AliSMSServiceImpl类中，您只需要通过实现IChannelSMSService接口就可以很方便地进行短信平台的替换。
 
 ### 技术选型
 1. Spring Boot 2.0.1.RELEASE
@@ -42,6 +42,7 @@ sms-parent
 ### 开发计划
 ```
 + 管理后台业务与guns解耦
++ 接口鉴权
 + docker构建支持
 + 群发短信支持
 + 其它短信渠道对接
