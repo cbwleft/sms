@@ -18,7 +18,6 @@ import com.cbwleft.sms.dao.mapper.MessageMapper;
 import com.cbwleft.sms.dao.mapper.TemplateMapper;
 import com.cbwleft.sms.dao.model.App;
 import com.cbwleft.sms.dao.model.Message;
-import com.cbwleft.sms.dao.model.MessageExample;
 import com.cbwleft.sms.dao.model.Template;
 import com.cbwleft.sms.model.dto.MessageDTO;
 import com.cbwleft.sms.model.dto.QuerySendResult;
@@ -29,6 +28,10 @@ import com.cbwleft.sms.model.vo.BaseResultEnum;
 import com.cbwleft.sms.service.IChannelSMSService;
 import com.cbwleft.sms.service.IMessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageHelper;
+
+import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.weekend.WeekendSqls;
 
 @Service
 public class MessageServiceImpl implements IMessageService {
@@ -152,8 +155,11 @@ public class MessageServiceImpl implements IMessageService {
 	public int updateMessageValidateStatus(Message message) {
 		Message updateMessage = new Message();
 		updateMessage.setValidateStatus(Constants.ValidateStatus.YES);
-		MessageExample example = new MessageExample();
-		example.createCriteria().andIdEqualTo(message.getId()).andValidateStatusEqualTo(message.getValidateStatus());// CAS
+		Example example = new Example.Builder(Message.class)
+				.where(WeekendSqls.<Message>custom()
+						.andEqualTo(Message::getId, message.getId())
+						.andEqualTo(Message::getValidateStatus, message.getValidateStatus()))//CAS
+				.build();
 		int result = messageMapper.updateByExampleSelective(updateMessage, example);
 		logger.info("{}更新验证码状态结果{}", message, result);
 		return result;
@@ -162,12 +168,15 @@ public class MessageServiceImpl implements IMessageService {
 	@Override
 	public Message queryLatestMessage(String mobile, Template template) {
 		Instant expire = Instant.now().minusSeconds(template.getValidateCodeExpire());
-		MessageExample example = new MessageExample();
-		example.setLimit(1);
-		example.setOrderByClause("create_date desc");
-		example.createCriteria().andMobileEqualTo(mobile).andTemplateIdEqualTo(template.getId())
-				.andCreateDateGreaterThan(Date.from(expire))// 这里是拿应用服务器与数据库服务器时间做比较，注意时区和时间同步
-				.andSendStatusGreaterThan(Constants.SendStatus.FAILURE);
+		Example example = new Example.Builder(Message.class)
+				.where(WeekendSqls.<Message>custom()
+						.andEqualTo(Message::getMobile, mobile)
+						.andEqualTo(Message::getTemplateId, template.getId())
+						.andGreaterThan(Message::getSendStatus, Constants.SendStatus.FAILURE)
+						.andGreaterThan(Message::getCreateDate, Date.from(expire)))
+				.orderByDesc("id")//此处等同于create_date,但是具有更好的性能
+				.build();
+		PageHelper.startPage(1, 1, false);
 		List<Message> list = messageMapper.selectByExample(example);
 		if (CollectionUtils.isEmpty(list)) {
 			return null;
@@ -178,11 +187,12 @@ public class MessageServiceImpl implements IMessageService {
 
 	@Override
 	public List<Message> querySendingMessages() {
-		MessageExample example = new MessageExample();
-		example.setLimit(100);
-		example.setOrderByClause("create_date desc");
-		example.createCriteria()
-			.andSendStatusEqualTo(Constants.SendStatus.SENDING);
+		Example example = new Example.Builder(Message.class)
+				.where(WeekendSqls.<Message>custom()
+						.andEqualTo(Message::getSendStatus, Constants.SendStatus.SENDING))
+				.orderByDesc("id")
+				.build();
+		PageHelper.startPage(1, 100, false);
 		return messageMapper.selectByExample(example);
 	}
 
