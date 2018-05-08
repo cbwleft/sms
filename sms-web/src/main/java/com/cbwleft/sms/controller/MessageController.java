@@ -1,5 +1,7 @@
 package com.cbwleft.sms.controller;
 
+import java.util.Collections;
+
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,9 @@ public class MessageController extends BaseController {
 	public BaseResult send(@RequestBody @Valid MessageDTO message, BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
 			return new BaseResult(BaseResultEnum.ILLEGAL_ARGUMENT, bindingResult.getFieldError().getDefaultMessage());
+		}
+		if (message.getParams() == null) {
+			message.setParams(Collections.emptyMap());
 		}
 		SendMessageResult result = messageService.send(message);
 		if (result.isSuccess()) {
