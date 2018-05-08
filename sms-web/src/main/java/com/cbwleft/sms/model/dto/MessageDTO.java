@@ -1,10 +1,6 @@
 package com.cbwleft.sms.model.dto;
 
-import java.util.Collections;
 import java.util.Map;
-
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 
 import com.cbwleft.sms.model.validation.Mobile;
 import com.cbwleft.sms.model.validation.TemplateId;
@@ -26,7 +22,7 @@ public class MessageDTO {
 	/**
 	 * 短信参数，不超过200个字符
 	 */
-	private Map<String, Object> params = Collections.emptyMap();
+	private Map<String, Object> params;
 
 	public String getMobile() {
 		return mobile;
