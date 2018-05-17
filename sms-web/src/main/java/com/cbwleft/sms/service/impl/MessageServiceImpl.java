@@ -27,6 +27,7 @@ import com.cbwleft.sms.model.vo.BaseException;
 import com.cbwleft.sms.model.vo.BaseResultEnum;
 import com.cbwleft.sms.service.IChannelSMSService;
 import com.cbwleft.sms.service.IMessageService;
+import com.cbwleft.sms.task.QuerySendTask;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 
@@ -46,6 +47,9 @@ public class MessageServiceImpl implements IMessageService {
 
 	@Autowired
 	private MessageMapper messageMapper;
+
+	@Autowired
+	private QuerySendTask querySendTask;
 
 	@Autowired
 	private IChannelSMSService channelSMSService;
@@ -76,8 +80,14 @@ public class MessageServiceImpl implements IMessageService {
 			message.setBizId(result.getBizId());
 			message.setValidateCode(result.getValidateCode());
 			message.setValidateStatus(Constants.ValidateStatus.NO);
+			Date now = new Date();
+			message.setCreateDate(now);
+			message.setUpdateDate(now);
 			int rows = messageMapper.insert(message);
 			logger.info("{}插入结果:{}", message, rows);
+			if (result.isSuccess()) {
+				querySendTask.scheduledQuerySend(message);
+			}
 		} catch (Exception e) {
 			logger.error("插入Message数据异常" + messageDTO, e);
 		}
