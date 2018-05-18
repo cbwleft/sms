@@ -76,6 +76,7 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
+		<finalName>sms-web</finalName>
 	</build>
 
 </project>
