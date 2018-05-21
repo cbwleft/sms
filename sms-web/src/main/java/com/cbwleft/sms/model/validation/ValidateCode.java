@@ -11,19 +11,20 @@ import javax.validation.Constraint;
 import javax.validation.Payload;
 import javax.validation.ReportAsSingleViolation;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+
+import org.hibernate.validator.constraints.Length;
 
 
 @Documented
 @Constraint(validatedBy = { })
 @NotNull
-@Pattern(regexp = "[1][0-9]{10}")
+@Length(min = 4, max = 6)
 @Target({ FIELD })
 @Retention(RUNTIME)
 @ReportAsSingleViolation
-public @interface Mobile {
+public @interface ValidateCode {
 	
-	String message() default "{com.cbwleft.sms.constraints.Mobile.messsage}";
+	String message() default "{com.cbwleft.sms.constraints.ValidateCode.messsage}";
 
     Class<?>[] groups() default { };
 
