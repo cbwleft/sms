@@ -1,9 +1,8 @@
 package com.cbwleft.sms.model.dto;
 
-import org.hibernate.validator.constraints.Length;
-
 import com.cbwleft.sms.model.validation.Mobile;
 import com.cbwleft.sms.model.validation.TemplateId;
+import com.cbwleft.sms.model.validation.ValidateCode;
 
 
 public class ValidateCodeDTO {
@@ -23,7 +22,7 @@ public class ValidateCodeDTO {
 	/**
 	 * 验证码
 	 */
-	@Length(min = 4, max = 6, message = "{com.cbwleft.sms.constraints.ValidateCode.messsage}")
+	@ValidateCode
 	private String validateCode;
 
 	public String getMobile() {
