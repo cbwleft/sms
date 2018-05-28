@@ -7,6 +7,22 @@ spring:
     url: jdbc:mysql://aliyun:3306/sms?useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
     username: root
     password: root
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    shutdown:
+      enabled: false
+    health:
+      show-details: always
+
+sms:
+  health:
+    samples: 10 #统计最近10次短信发送结果
+    threshold: 0.5 #如果成功率低于50%则认为短信服务down掉了
     
 swagger:
   base-package:

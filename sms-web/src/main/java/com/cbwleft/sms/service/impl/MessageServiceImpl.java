@@ -19,6 +19,7 @@ import com.cbwleft.sms.dao.mapper.TemplateMapper;
 import com.cbwleft.sms.dao.model.App;
 import com.cbwleft.sms.dao.model.Message;
 import com.cbwleft.sms.dao.model.Template;
+import com.cbwleft.sms.health.SMSHealthIndicator;
 import com.cbwleft.sms.model.dto.MessageDTO;
 import com.cbwleft.sms.model.dto.QuerySendResult;
 import com.cbwleft.sms.model.dto.SendMessageResult;
@@ -53,6 +54,9 @@ public class MessageServiceImpl implements IMessageService {
 
 	@Autowired
 	private IChannelSMSService channelSMSService;
+	
+	@Autowired
+	private SMSHealthIndicator smsHealthIndicator;
 
 	@Override
 	public SendMessageResult send(MessageDTO messageDTO) {
@@ -87,6 +91,8 @@ public class MessageServiceImpl implements IMessageService {
 			logger.info("{}插入结果:{}", message, rows);
 			if (result.isSuccess()) {
 				querySendTask.scheduledQuerySend(message);
+			}else {
+				smsHealthIndicator.addSample(message);
 			}
 		} catch (Exception e) {
 			logger.error("插入Message数据异常" + messageDTO, e);
@@ -117,6 +123,7 @@ public class MessageServiceImpl implements IMessageService {
 			}
 			int result = messageMapper.updateByPrimaryKeySelective(updateMessage);
 			logger.info("{}更新发送状态结果{}", updateMessage, result);
+			smsHealthIndicator.addSample(updateMessage);
 		}
 		return querySendResult;
 	}
