@@ -1,7 +1,7 @@
 # SMS微服务
 
 ### 项目介绍
-基于Spring Boot 2.0.1.RELEASE，阿里云通讯实现的短信微服务。
+基于Spring Boot 2.0.2.RELEASE，阿里云通讯实现的短信微服务。
 除了支持发送普通短信以外，封装了短信验证码发送、验证码校验这种常见的应用场景。
 
 ### 为什么需要短信微服务
@@ -20,7 +20,7 @@
 **如果您没有使用阿里云通讯**，该工程将对短信SDK的依赖限制在sms工程的AliSMSServiceImpl类中，您只需要通过实现IChannelSMSService接口就可以很方便地进行短信平台的替换。
 
 ### 技术选型
-1. Spring Boot 2.0.1.RELEASE
+1. Spring Boot 2.0.2.RELEASE
 2. Hibernate Validator 6.0.9.Final
 3. Mybatis 3.4.5
 4. MyBatis 通用 Mapper + 分页插件 PageHelper
