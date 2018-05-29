@@ -39,11 +39,16 @@ sms-parent
 3. 运行sms工程，访问[http://localhost:8000/swagger-ui.html#/](http://localhost:8000/swagger-ui.html#/)进行接口测试<br>
 4. (可选)目前管理后台基于guns开发，[源代码地址](https://github.com/cbwleft/guns/tree/sms/master)sms/master分支
 
-### 开发计划
+### 更新记录
+***
+
+版本 |日期 |描述
+----- | --------- | -------
+1.0.0 |2018-05-29 |单短信通道的最后一个版本
+
 ```
-+ 管理后台业务与guns解耦
++ 多通道支持
 + 接口鉴权
 + docker构建支持
 + 群发短信支持
-+ 其它短信渠道对接
 ```
