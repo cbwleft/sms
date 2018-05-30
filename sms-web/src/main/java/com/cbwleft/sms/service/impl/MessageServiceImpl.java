@@ -2,14 +2,15 @@ package com.cbwleft.sms.service.impl;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.cbwleft.sms.dao.Constants;
@@ -28,7 +29,6 @@ import com.cbwleft.sms.model.vo.BaseException;
 import com.cbwleft.sms.model.vo.BaseResultEnum;
 import com.cbwleft.sms.service.IChannelSMSService;
 import com.cbwleft.sms.service.IMessageService;
-import com.cbwleft.sms.task.QuerySendTask;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 
@@ -50,9 +50,6 @@ public class MessageServiceImpl implements IMessageService {
 	private MessageMapper messageMapper;
 
 	@Autowired
-	private QuerySendTask querySendTask;
-
-	@Autowired
 	private IChannelSMSService channelSMSService;
 	
 	@Autowired
@@ -68,12 +65,30 @@ public class MessageServiceImpl implements IMessageService {
 		if (app == null) {
 			throw new BaseException(BaseResultEnum.APP_NOT_EXIST);
 		}
+		
+		Map<String, Object> params = messageDTO.getParams();
+		String validateCodeKey = template.getValidateCodeKey();
+		String validateCode = null;
+		if (!StringUtils.isEmpty(validateCodeKey)) {
+			logger.debug("需要发送验证码");
+			validateCode = String.valueOf(params.get(validateCodeKey));
+			if (StringUtils.isEmpty(validateCode)) {
+				logger.info("参数中包含验证码{},系统不生成新的验证码", validateCode);
+			} else {
+				validateCode = getValidateCode(app.getValidateCodeLength());
+				logger.debug("系统生成的验证码为{}", validateCode);
+				Map<String, Object> paramsWithValidateCode = new HashMap<>(params);
+				paramsWithValidateCode.put(validateCodeKey, validateCode);
+				messageDTO.setParams(paramsWithValidateCode);
+			}
+		}
+		
 		logger.info("开始发送短信:{}", template);
 		SendMessageResult result = channelSMSService.send(app, template, messageDTO);
 		try {
 			Message message = new Message();
 			message.setMobile(messageDTO.getMobile());
-			message.setParams(new ObjectMapper().writeValueAsString(messageDTO.getParams()));
+			message.setParams(new ObjectMapper().writeValueAsString(params));
 			message.setTemplateId(template.getId());
 			if (result.isSuccess()) {
 				message.setSendStatus(Constants.SendStatus.SENDING);
@@ -82,16 +97,14 @@ public class MessageServiceImpl implements IMessageService {
 				message.setFailCode(result.getFailCode());
 			}
 			message.setBizId(result.getBizId());
-			message.setValidateCode(result.getValidateCode());
+			message.setValidateCode(validateCode);
 			message.setValidateStatus(Constants.ValidateStatus.NO);
 			Date now = new Date();
 			message.setCreateDate(now);
 			message.setUpdateDate(now);
 			int rows = messageMapper.insert(message);
 			logger.info("{}插入结果:{}", message, rows);
-			if (result.isSuccess()) {
-				querySendTask.scheduledQuerySend(message);
-			}else {
+			if (!result.isSuccess()) {
 				smsHealthIndicator.addSample(message);
 			}
 		} catch (Exception e) {
@@ -113,17 +126,7 @@ public class MessageServiceImpl implements IMessageService {
 		App app = appMapper.selectByPrimaryKey(template.getAppId());
 		QuerySendResult querySendResult = channelSMSService.querySendStatus(app, message);
 		if (querySendResult.isSuccess() && Constants.SendStatus.SENDING != querySendResult.getSendStatus()) {
-			Message updateMessage = new Message();
-			updateMessage.setId(message.getId());
-			updateMessage.setSendStatus(querySendResult.getSendStatus());
-			if (Constants.SendStatus.FAILURE == querySendResult.getSendStatus()) {
-				updateMessage.setFailCode(querySendResult.getFailCode());
-			}else if(Constants.SendStatus.SUCCESS == querySendResult.getSendStatus()) {
-				updateMessage.setReciveDate(querySendResult.getReceiveDate());
-			}
-			int result = messageMapper.updateByPrimaryKeySelective(updateMessage);
-			logger.info("{}更新发送状态结果{}", updateMessage, result);
-			smsHealthIndicator.addSample(updateMessage);
+			updateMessageSendStatus(message, querySendResult);
 		}
 		return querySendResult;
 	}
@@ -194,12 +197,33 @@ public class MessageServiceImpl implements IMessageService {
 				.orderByDesc("id")//此处等同于create_date,但是具有更好的性能
 				.build();
 		PageHelper.startPage(1, 1, false);
-		List<Message> list = messageMapper.selectByExample(example);
-		if (CollectionUtils.isEmpty(list)) {
-			return null;
-		} else {
-			return list.get(0);
+		return messageMapper.selectOneByExample(example);
+	}
+	
+	@Override
+	public Message queryMessage(String mobile, String bizId) {
+		Example example = new Example.Builder(Message.class)
+				.where(WeekendSqls.<Message>custom()
+						.andEqualTo(Message::getMobile, mobile)
+						.andEqualTo(Message::getBizId, bizId))
+				.build();
+		return messageMapper.selectOneByExample(example);
+	}
+	
+	@Override
+	public int updateMessageSendStatus(Message message, QuerySendResult querySendResult) {
+		Message updateMessage = new Message();
+		updateMessage.setId(message.getId());
+		updateMessage.setSendStatus(querySendResult.getSendStatus());
+		if (Constants.SendStatus.FAILURE == querySendResult.getSendStatus()) {
+			updateMessage.setFailCode(querySendResult.getFailCode());
+		} else if(Constants.SendStatus.SUCCESS == querySendResult.getSendStatus()) {
+			updateMessage.setReciveDate(querySendResult.getReceiveDate());
 		}
+		int result = messageMapper.updateByPrimaryKeySelective(updateMessage);
+		logger.info("{}更新发送状态结果{}", updateMessage, result);
+		smsHealthIndicator.addSample(updateMessage);
+		return result;
 	}
 
 	@Override

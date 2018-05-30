@@ -11,6 +11,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.cbwleft.sms.dao.model.Message;
+import com.cbwleft.sms.service.IBatchQueryable;
+import com.cbwleft.sms.service.IChannelSMSService;
 import com.cbwleft.sms.service.IMessageService;
 
 @Component
@@ -19,27 +21,22 @@ public class QuerySendTask {
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
 	@Autowired
-	private ScheduledExecutorService scheduledExecutor;
+	private IMessageService messageService;
 
 	@Autowired
-	private IMessageService messageService;
+	private IChannelSMSService channelSMSService;
 
 	@Scheduled(fixedDelay = 5 * 60 * 1000)
 	public void querySend() {
 		logger.debug("开始查询短信发送结果");
-		List<Message> list = messageService.querySendingMessages();
-		list.forEach(message -> {
-			messageService.queryAndUpdateSendStatus(message);
-		});
-	}
-
-	public void scheduledQuerySend(Message message) {
-		logger.debug("等待10秒");
-		scheduledExecutor.schedule(() -> {
-			logger.debug("执行短信查询任务");
-			messageService.queryAndUpdateSendStatus(message);
-		}, 10, TimeUnit.SECONDS);
-
+		if (channelSMSService instanceof IBatchQueryable) {
+			((IBatchQueryable) channelSMSService).batchQueryAndUpdateSendStatus();
+		}else {
+			List<Message> list = messageService.querySendingMessages();
+			list.forEach(message -> {
+				messageService.queryAndUpdateSendStatus(message);
+			});
+		}
 	}
 
 }

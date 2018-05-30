@@ -26,5 +26,4 @@ public interface IChannelSMSService {
 	 */
 	public QuerySendResult querySendStatus(App app, Message message);
 
-	
 }

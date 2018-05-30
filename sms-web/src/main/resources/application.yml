@@ -2,6 +2,10 @@ server:
   port: 8000
 
 spring:
+  profiles:
+    include:
+    - aliyun #使用阿里云通讯通道
+    #- link #使用凌凯短信通道
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://aliyun:3306/sms?useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
@@ -23,7 +27,14 @@ sms:
   health:
     samples: 10 #统计最近10次短信发送结果
     threshold: 0.5 #如果成功率低于50%则认为短信服务down掉了
-    
+  channel:
+    aliyun:
+      access-key-id: *** #你的accessKeyId
+      access-key-secret: *** #你的accessKeySecret
+    link:
+      corp-id: *** #企业号
+      password: *** #密码
+
 swagger:
   base-package:
     com.cbwleft.sms.controller

@@ -59,4 +59,20 @@ public interface IMessageService {
 	 * @return
 	 */
 	public List<Message> querySendingMessages();
+
+	/**
+	 * 根据手机号和第三方id查询短信
+	 * @param mobile
+	 * @param bizId
+	 * @return
+	 */
+	public Message queryMessage(String mobile, String bizId);
+
+	/**
+	 * 更新发送状态
+	 * @param message 更新前短信
+	 * @param querySendResult 短信查询结果
+	 * @return
+	 */
+	public int updateMessageSendStatus(Message message, QuerySendResult querySendResult);
 }
