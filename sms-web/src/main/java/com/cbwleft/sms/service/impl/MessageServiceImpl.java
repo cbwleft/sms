@@ -22,6 +22,7 @@ import com.cbwleft.sms.dao.model.App;
 import com.cbwleft.sms.dao.model.Message;
 import com.cbwleft.sms.dao.model.Template;
 import com.cbwleft.sms.health.SMSHealthIndicator;
+import com.cbwleft.sms.model.dto.BatchMessageDTO;
 import com.cbwleft.sms.model.dto.MessageDTO;
 import com.cbwleft.sms.model.dto.QuerySendResult;
 import com.cbwleft.sms.model.dto.SendMessageResult;
@@ -236,6 +237,17 @@ public class MessageServiceImpl implements IMessageService {
 				.build();
 		PageHelper.startPage(1, 100, false);
 		return messageMapper.selectByExample(example);
+	}
+
+	@Override
+	public SendMessageResult batchSend(BatchMessageDTO batchMessage) {
+		App app = appMapper.selectByPrimaryKey(batchMessage.getAppId());
+		if (app == null) {
+			throw new BaseException(BaseResultEnum.APP_NOT_EXIST);
+		}
+		logger.info("开始批量发送短信:{}", batchMessage.getContent());
+		SendMessageResult sendMessageResult = channelSMSService.batchSend(app, batchMessage);
+		return sendMessageResult;
 	}
 
 }

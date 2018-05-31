@@ -25,6 +25,7 @@ import com.cbwleft.sms.dao.Constants;
 import com.cbwleft.sms.dao.model.App;
 import com.cbwleft.sms.dao.model.Message;
 import com.cbwleft.sms.dao.model.Template;
+import com.cbwleft.sms.model.dto.BatchMessageDTO;
 import com.cbwleft.sms.model.dto.MessageDTO;
 import com.cbwleft.sms.model.dto.QuerySendResult;
 import com.cbwleft.sms.model.dto.SendMessageResult;
@@ -130,6 +131,32 @@ public class LinkSMSServiceImpl implements IBatchQueryable {
 			}
 		} else {
 			logger.warn("凌凯接收短信发送状态报告失败,错误代码:{}", body);
+		}
+	}
+
+	@Override
+	public SendMessageResult batchSend(App app, BatchMessageDTO batchMessage) {
+		try {
+			String content = batchMessage.getContent();
+			content += "【" + app.getPrefix() + "】";
+			MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
+			params.add("CorpID", linkSMSConfig.getCorpId());
+			params.add("Pwd", linkSMSConfig.getPassword());
+			params.add("Mobile", String.join(",", batchMessage.getMobile()));
+			params.add("Content", content);
+			ResponseEntity<String> result = restTemplate.postForEntity("/BatchSend2.aspx", params, String.class);
+			String body = result.getBody();
+			logger.info("凌凯短信发送接口返回{}", body);
+			int intBody = Integer.parseInt(body);
+			if (intBody > 0) {
+				return new SendMessageResult(true, body);
+			} else {
+				logger.warn("凌凯短信发送失败,错误代码:{}", body);
+				return new SendMessageResult(body, null);
+			}
+		} catch (Exception e) {
+			logger.error("凌凯短信接口异常", e);
+			return new SendMessageResult(e.getMessage(), null);
 		}
 	}
 

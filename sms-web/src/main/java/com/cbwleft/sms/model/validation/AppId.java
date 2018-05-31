@@ -1,11 +1,6 @@
 package com.cbwleft.sms.model.validation;
 
-import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
-import static java.lang.annotation.ElementType.CONSTRUCTOR;
 import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.ElementType.TYPE_USE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Documented;
@@ -16,19 +11,20 @@ import javax.validation.Constraint;
 import javax.validation.Payload;
 import javax.validation.ReportAsSingleViolation;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+
+import org.hibernate.validator.constraints.Range;
 
 
 @Documented
 @Constraint(validatedBy = { })
 @NotNull
-@Pattern(regexp = "[1][0-9]{10}")
-@Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE })
+@Range(min = 0, max = Byte.MAX_VALUE)
+@Target({ FIELD })
 @Retention(RUNTIME)
 @ReportAsSingleViolation
-public @interface Mobile {
+public @interface AppId {
 	
-	String message() default "{com.cbwleft.sms.constraints.Mobile.messsage}";
+	String message() default "{com.cbwleft.sms.constraints.AppId.messsage}";
 
     Class<?>[] groups() default { };
 

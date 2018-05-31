@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.cbwleft.sms.dao.model.Message;
 import com.cbwleft.sms.dao.model.Template;
+import com.cbwleft.sms.model.dto.BatchMessageDTO;
 import com.cbwleft.sms.model.dto.MessageDTO;
 import com.cbwleft.sms.model.dto.QuerySendResult;
 import com.cbwleft.sms.model.dto.SendMessageResult;
@@ -77,4 +78,11 @@ public interface IMessageService {
 	 * @return
 	 */
 	public int updateMessageSendStatus(Message message, QuerySendResult querySendResult);
+
+	/**
+	 * 批量发送短信
+	 * @param batchMessage
+	 * @return
+	 */
+	public SendMessageResult batchSend(BatchMessageDTO batchMessage);
 }

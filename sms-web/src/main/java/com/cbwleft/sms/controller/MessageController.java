@@ -10,11 +10,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cbwleft.sms.constant.BaseResultEnum;
+import com.cbwleft.sms.model.dto.BatchMessageDTO;
 import com.cbwleft.sms.model.dto.MessageDTO;
 import com.cbwleft.sms.model.dto.SendMessageResult;
 import com.cbwleft.sms.model.dto.ValidateCodeDTO;
 import com.cbwleft.sms.model.vo.BaseResult;
-import com.cbwleft.sms.model.vo.BaseResultEnum;
 import com.cbwleft.sms.service.IMessageService;
 
 @RestController
@@ -61,6 +62,25 @@ public class MessageController extends BaseController {
 			return new BaseResult(BaseResultEnum.SUCCESS, "验证通过");
 		} else {
 			return new BaseResult(BaseResultEnum.FAIL, "验证失败");
+		}
+	}
+	
+	/**
+	 * 批量发送短信
+	 * 
+	 * @param message
+	 * @return
+	 */
+	@PostMapping("/batchSend")
+	public BaseResult batchSend(@RequestBody @Valid BatchMessageDTO batchMessage, BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			return new BaseResult(BaseResultEnum.ILLEGAL_ARGUMENT, bindingResult.getFieldError().getDefaultMessage());
+		}
+		SendMessageResult result = messageService.batchSend(batchMessage);
+		if (result.isSuccess()) {
+			return new BaseResult(BaseResultEnum.SUCCESS, "发送成功");
+		} else {
+			return new BaseResult(BaseResultEnum.FAIL, result.getFailCode());
 		}
 	}
 

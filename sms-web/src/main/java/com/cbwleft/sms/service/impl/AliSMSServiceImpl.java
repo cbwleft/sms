@@ -26,6 +26,7 @@ import com.cbwleft.sms.dao.Constants;
 import com.cbwleft.sms.dao.model.App;
 import com.cbwleft.sms.dao.model.Message;
 import com.cbwleft.sms.dao.model.Template;
+import com.cbwleft.sms.model.dto.BatchMessageDTO;
 import com.cbwleft.sms.model.dto.MessageDTO;
 import com.cbwleft.sms.model.dto.QuerySendResult;
 import com.cbwleft.sms.model.dto.SendMessageResult;
@@ -116,6 +117,11 @@ public class AliSMSServiceImpl implements IChannelSMSService {
 			logger.error("阿里云通讯查询短信接口异常", e);
 			return new QuerySendResult(false);
 		}
+	}
+
+	@Override
+	public SendMessageResult batchSend(App app, BatchMessageDTO batchMessage) {
+		throw new UnsupportedOperationException();
 	}
 
 }

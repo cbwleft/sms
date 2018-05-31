@@ -15,9 +15,6 @@ import com.cbwleft.sms.dao.model.Message;
 public class IMessageServiceTest {
 	
 	@Autowired
-	private IMessageService messageService;
-	
-	@Autowired
 	private MessageMapper messageMapper;
 
 	@Test
