@@ -1,5 +1,6 @@
 package com.cbwleft.sms.service;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,11 +18,12 @@ public class IMessageServiceTest {
 	private IMessageService messageService;
 	
 	@Autowired
-	private MessageMapper MessageMapper;
+	private MessageMapper messageMapper;
 
 	@Test
 	public void testQueryAndUpdateSendStatus() {
-		Message message =MessageMapper.selectByPrimaryKey(25);
-		messageService.queryAndUpdateSendStatus(message);
+		Message message =messageMapper.selectByPrimaryKey(244);
+		//messageService.queryAndUpdateSendStatus(message);
+		Assert.assertNotNull(message);
 	}
 }

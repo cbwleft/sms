@@ -15,13 +15,13 @@ public class SMSHealthIndicator implements HealthIndicator {
 
 	private long count = 0;// 统计发送总量
 
-	private final float downThreshold;// 短信发送成功率临界值
+	private final float threshold;// 短信发送成功率临界值
 
 	private String lastFailCode = null;// 上一次发送失败原因
 
 	public SMSHealthIndicator(SMSHealthConfig config) {
 		samples = new boolean[config.getSamples()];
-		downThreshold = config.getThreshold();
+		threshold = config.getThreshold();
 	}
 
 	@Override
@@ -36,11 +36,12 @@ public class SMSHealthIndicator implements HealthIndicator {
 				}
 			}
 			float ratio = (success * 100 / samples.length) / 100f;
-			if (ratio < downThreshold) {
-				return Health.down().withDetail("count", count).withDetail("successRatio", ratio)
+			if (ratio < threshold) {
+				return Health.down().withDetail("count", count).withDetail("ratio", ratio)
 						.withDetail("lastFailCode", lastFailCode).build();
 			} else {
-				return Health.up().withDetail("count", count).withDetail("successRatio", ratio).build();
+				return Health.up().withDetail("count", count).withDetail("ratio", ratio)
+						.withDetail("lastFailCode", lastFailCode).build();
 			}
 		}
 	}

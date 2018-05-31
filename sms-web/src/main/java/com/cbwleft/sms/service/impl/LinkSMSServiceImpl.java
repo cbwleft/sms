@@ -121,7 +121,7 @@ public class LinkSMSServiceImpl implements IBatchQueryable {
 							messageService.updateMessageSendStatus(message, querySendResult);
 						}
 					} else {
-						logger.info("未找到对应的短信记录,可能未通过短信微服务发送");
+						logger.info("未找到对应的短信记录,可能未通过短信微服务发送或者不同环境账户未分离");
 					}
 				} catch (Exception e) {
 					logger.error("凌凯接收短信发送状态格式异常:{}", e.getMessage());
