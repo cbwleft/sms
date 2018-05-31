@@ -21,6 +21,7 @@ import com.aliyuncs.dysmsapi.model.v20170525.QuerySendDetailsResponse.SmsSendDet
 import com.aliyuncs.dysmsapi.model.v20170525.SendSmsRequest;
 import com.aliyuncs.dysmsapi.model.v20170525.SendSmsResponse;
 import com.aliyuncs.http.MethodType;
+import com.cbwleft.sms.constant.ConfigConstants;
 import com.cbwleft.sms.dao.Constants;
 import com.cbwleft.sms.dao.model.App;
 import com.cbwleft.sms.dao.model.Message;
@@ -32,7 +33,7 @@ import com.cbwleft.sms.service.IChannelSMSService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
-@Profile("aliyun")
+@Profile(ConfigConstants.ALI_SMS)
 public class AliSMSServiceImpl implements IChannelSMSService {
 
 	private static final Logger logger = LoggerFactory.getLogger(AliSMSServiceImpl.class);

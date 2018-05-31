@@ -20,6 +20,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import com.cbwleft.sms.config.LinkSMSConfig;
+import com.cbwleft.sms.constant.ConfigConstants;
 import com.cbwleft.sms.dao.Constants;
 import com.cbwleft.sms.dao.model.App;
 import com.cbwleft.sms.dao.model.Message;
@@ -31,7 +32,7 @@ import com.cbwleft.sms.service.IBatchQueryable;
 import com.cbwleft.sms.service.IMessageService;
 
 @Service
-@Profile("link")
+@Profile(ConfigConstants.LINK_SMS)
 public class LinkSMSServiceImpl implements IBatchQueryable {
 
 	private static final Logger logger = LoggerFactory.getLogger(LinkSMSServiceImpl.class);

@@ -1,5 +1,7 @@
 package com.cbwleft.sms.model.vo;
 
+import com.cbwleft.sms.constant.BaseResultEnum;
+
 public class BaseResult {
 
 	private BaseResultEnum baseResultEnum;

@@ -1,5 +1,10 @@
-package com.cbwleft.sms.model.vo;
+package com.cbwleft.sms.constant;
 
+/**
+ * 接口错误码
+ * @author cbwleft
+ *
+ */
 public enum BaseResultEnum {
 
 	SUCCESS(true, 1), 

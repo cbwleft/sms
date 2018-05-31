@@ -1,5 +1,7 @@
 package com.cbwleft.sms.model.vo;
 
+import com.cbwleft.sms.constant.BaseResultEnum;
+
 public class BaseException extends RuntimeException{
 
 	private static final long serialVersionUID = 5195069121136547205L;

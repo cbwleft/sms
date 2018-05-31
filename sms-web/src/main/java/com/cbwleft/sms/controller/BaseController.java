@@ -4,9 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.cbwleft.sms.constant.BaseResultEnum;
 import com.cbwleft.sms.model.vo.BaseException;
 import com.cbwleft.sms.model.vo.BaseResult;
-import com.cbwleft.sms.model.vo.BaseResultEnum;
 
 public class BaseController {
 	

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import com.cbwleft.sms.constant.BaseResultEnum;
 import com.cbwleft.sms.dao.Constants;
 import com.cbwleft.sms.dao.mapper.AppMapper;
 import com.cbwleft.sms.dao.mapper.MessageMapper;
@@ -26,7 +27,6 @@ import com.cbwleft.sms.model.dto.QuerySendResult;
 import com.cbwleft.sms.model.dto.SendMessageResult;
 import com.cbwleft.sms.model.dto.ValidateCodeDTO;
 import com.cbwleft.sms.model.vo.BaseException;
-import com.cbwleft.sms.model.vo.BaseResultEnum;
 import com.cbwleft.sms.service.IChannelSMSService;
 import com.cbwleft.sms.service.IMessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;

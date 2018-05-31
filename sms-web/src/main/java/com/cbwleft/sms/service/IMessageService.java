@@ -51,7 +51,7 @@ public interface IMessageService {
 	/**
 	 * 查询并更新发送状态
 	 * @param message
-	 * @return TODO
+	 * @return
 	 */
 	public QuerySendResult queryAndUpdateSendStatus(Message message);
 
