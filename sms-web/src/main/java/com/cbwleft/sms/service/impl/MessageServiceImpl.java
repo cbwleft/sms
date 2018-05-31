@@ -227,10 +227,11 @@ public class MessageServiceImpl implements IMessageService {
 	}
 
 	@Override
-	public List<Message> querySendingMessages() {
+	public List<Message> querySendingMessages(Date fromDate) {
 		Example example = new Example.Builder(Message.class)
 				.where(WeekendSqls.<Message>custom()
-						.andEqualTo(Message::getSendStatus, Constants.SendStatus.SENDING))
+						.andEqualTo(Message::getSendStatus, Constants.SendStatus.SENDING)
+						.andGreaterThan(Message::getCreateDate, fromDate))
 				.orderByDesc("id")
 				.build();
 		PageHelper.startPage(1, 100, false);

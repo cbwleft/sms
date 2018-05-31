@@ -1,5 +1,8 @@
 package com.cbwleft.sms.task;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -30,7 +33,8 @@ public class QuerySendTask {
 		if (channelSMSService instanceof IBatchQueryable) {
 			((IBatchQueryable) channelSMSService).batchQueryAndUpdateSendStatus();
 		}else {
-			List<Message> list = messageService.querySendingMessages();
+			Date yesterday = Date.from(Instant.now().minus(Duration.ofDays(1)));
+			List<Message> list = messageService.querySendingMessages(yesterday);
 			list.forEach(message -> {
 				messageService.queryAndUpdateSendStatus(message);
 			});

@@ -1,6 +1,8 @@
 package com.cbwleft.sms.service.impl;
 
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -83,7 +85,12 @@ public class AliSMSServiceImpl implements IChannelSMSService {
 			if ("OK".equals(querySendDetailsResponse.getCode())) {
 				List<SmsSendDetailDTO> list = querySendDetailsResponse.getSmsSendDetailDTOs();
 				if (CollectionUtils.isEmpty(list)) {
-					return new QuerySendResult(true, Constants.SendStatus.FAILURE, null, null, "no match send record");
+					if (Duration.between(message.getCreateDate().toInstant(), Instant.now()).toMinutes() > 5) {
+						return new QuerySendResult(true, Constants.SendStatus.FAILURE, null, null, "no match send record");
+					} else {
+						logger.info("未查询到对应的短信记录,可能是因为阿里读写库同步延迟");
+						return new QuerySendResult(false);
+					}
 				}
 				SmsSendDetailDTO smsSendDetailDTO = list.get(0);
 				logger.info("阿里云通讯短信查询结果为:{}", new ObjectMapper().writeValueAsString(smsSendDetailDTO));

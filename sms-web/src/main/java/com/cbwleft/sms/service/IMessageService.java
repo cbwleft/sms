@@ -1,5 +1,6 @@
 package com.cbwleft.sms.service;
 
+import java.util.Date;
 import java.util.List;
 
 import com.cbwleft.sms.dao.model.Message;
@@ -56,9 +57,10 @@ public interface IMessageService {
 
 	/**
 	 * 查询发送中的短信
+	 * @param fromDate 查询该时间点之后的数据
 	 * @return
 	 */
-	public List<Message> querySendingMessages();
+	public List<Message> querySendingMessages(Date fromDate);
 
 	/**
 	 * 根据手机号和第三方id查询短信
