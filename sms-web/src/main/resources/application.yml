@@ -11,7 +11,10 @@ spring:
     url: jdbc:mysql://aliyun:3306/sms?useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
     username: root
     password: root
-
+  redis:
+    host: aliyun
+    port: 6379
+    
 management:
   endpoints:
     web:
