@@ -35,7 +35,7 @@ sms-parent
 ```
 ### 项目测试
 1. 运行sms.sql（需要mysql 5.6以上）<br>
-2. 修改application.yml中的数据库地址<br>
+2. 修改application.yml中的数据库、redis地址<br>
 3. 运行sms工程，访问[http://localhost:8000/swagger-ui.html#/](http://localhost:8000/swagger-ui.html#/)进行接口测试<br>
 4. (可选)目前管理后台基于guns开发，[源代码地址](https://github.com/cbwleft/guns/tree/sms/master)sms/master分支
 
@@ -46,11 +46,11 @@ sms-parent
 ----- | --------- | -------
 1.0.0 |2018-05-29 |阿里云通讯单短信通道
 1.1.0 |2018-05-31 |增加凌凯短信可选实现
+1.1.1 |2018-06-01 |增加批量发送短信接口（新增redis依赖）
 1.2.0 |计划中      |多短信通道自动切换
 
 ### 开发计划
 ```
-+ 群发短信支持
 + 多短信通道自动切换
 + 接口鉴权
 + 更多通道支持

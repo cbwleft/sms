@@ -2,7 +2,7 @@ package com.cbwleft.sms.service.impl;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -113,7 +113,7 @@ public class LinkSMSServiceImpl implements IBatchQueryable {
 			logger.debug("没有新的报告数据");
 		} else if (body.endsWith("|||")) {// ID+'$$$$$'+号码+''$$$$$'+时间+'$$$$$'+报告标志+'$$$$$'+报告+'$$$$$'+报告日期+'|||'
 			String[] reports = body.split("\\|\\|\\|");
-			Set<Integer> batchMessageIds = new HashSet<>();
+			Map<String, BatchMessage> batchMessages = new HashMap<>();// 自己实现一级缓存
 			for (String report : reports) {
 				try {
 					String[] args = report.split("\\$\\$\\$\\$\\$");
@@ -137,10 +137,13 @@ public class LinkSMSServiceImpl implements IBatchQueryable {
 						}
 					} else {
 						logger.debug("检查是否是批量发送短信");
-						BatchMessage batchMessage = messageService.queryBatchMessage(bizId);
+						BatchMessage batchMessage = batchMessages.get(bizId);
+						if (batchMessage == null) {
+							batchMessage = messageService.queryBatchMessage(bizId);
+						}
 						if (batchMessage != null) {
+							batchMessages.putIfAbsent(bizId, batchMessage);
 							int id = batchMessage.getId();
-							batchMessageIds.add(id);
 							stringRedisTemplate.opsForSet().remove(RedisKeys.BATCH_MESSAGE_SENDING.format(id), mobile);
 							if (REPORT_STATUS_SUCCESS.equals(status)) {
 								stringRedisTemplate.opsForSet().add(RedisKeys.BATCH_MESSAGE_SUCCESS.format(id), mobile);
@@ -155,8 +158,9 @@ public class LinkSMSServiceImpl implements IBatchQueryable {
 					logger.error("凌凯接收短信发送状态格式异常:{}", e.getMessage());
 				}
 			}
-			for (int id : batchMessageIds) {
+			for (BatchMessage batchMessage : batchMessages.values()) {
 				try {
+					int id = batchMessage.getId();
 					short sending = stringRedisTemplate.opsForSet().size(RedisKeys.BATCH_MESSAGE_SENDING.format(id)).shortValue();
 					short success = stringRedisTemplate.opsForSet().size(RedisKeys.BATCH_MESSAGE_SUCCESS.format(id)).shortValue();
 					short failure = stringRedisTemplate.opsForSet().size(RedisKeys.BATCH_MESSAGE_FAILURE.format(id)).shortValue();
