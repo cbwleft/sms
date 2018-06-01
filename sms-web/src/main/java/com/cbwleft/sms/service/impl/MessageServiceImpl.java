@@ -6,19 +6,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.cbwleft.sms.constant.BaseResultEnum;
-import com.cbwleft.sms.dao.Constants;
+import com.cbwleft.sms.dao.constant.Constants;
+import com.cbwleft.sms.dao.constant.RedisKeys;
 import com.cbwleft.sms.dao.mapper.AppMapper;
+import com.cbwleft.sms.dao.mapper.BatchMessageMapper;
 import com.cbwleft.sms.dao.mapper.MessageMapper;
 import com.cbwleft.sms.dao.mapper.TemplateMapper;
 import com.cbwleft.sms.dao.model.App;
+import com.cbwleft.sms.dao.model.BatchMessage;
 import com.cbwleft.sms.dao.model.Message;
 import com.cbwleft.sms.dao.model.Template;
 import com.cbwleft.sms.health.SMSHealthIndicator;
@@ -42,19 +47,25 @@ public class MessageServiceImpl implements IMessageService {
 	private static final Logger logger = LoggerFactory.getLogger(MessageServiceImpl.class);
 
 	@Autowired
+	private AppMapper appMapper;
+	
+	@Autowired
 	private TemplateMapper templateMapper;
 
 	@Autowired
-	private AppMapper appMapper;
-
-	@Autowired
 	private MessageMapper messageMapper;
+	
+	@Autowired
+	private BatchMessageMapper batchMessageMapper;
 
 	@Autowired
 	private IChannelSMSService channelSMSService;
 	
 	@Autowired
 	private SMSHealthIndicator smsHealthIndicator;
+	
+	@Autowired
+	private StringRedisTemplate stringRedisTemplate;
 
 	@Override
 	public SendMessageResult send(MessageDTO messageDTO) {
@@ -103,8 +114,8 @@ public class MessageServiceImpl implements IMessageService {
 			Date now = new Date();
 			message.setCreateDate(now);
 			message.setUpdateDate(now);
-			int rows = messageMapper.insert(message);
-			logger.info("{}插入结果:{}", message, rows);
+			int rows = messageMapper.insertSelective(message);
+			logger.info("{}插入结果:{},生成的自增id为:{}", message, rows, message.getId());
 			if (!result.isSuccess()) {
 				smsHealthIndicator.addSample(message);
 			}
@@ -203,12 +214,10 @@ public class MessageServiceImpl implements IMessageService {
 	
 	@Override
 	public Message queryMessage(String mobile, String bizId) {
-		Example example = new Example.Builder(Message.class)
-				.where(WeekendSqls.<Message>custom()
-						.andEqualTo(Message::getMobile, mobile)
-						.andEqualTo(Message::getBizId, bizId))
-				.build();
-		return messageMapper.selectOneByExample(example);
+		Message message = new Message();
+		message.setBizId(bizId);
+		message.setMobile(mobile);
+		return messageMapper.selectOne(message);
 	}
 	
 	@Override
@@ -240,14 +249,65 @@ public class MessageServiceImpl implements IMessageService {
 	}
 
 	@Override
-	public SendMessageResult batchSend(BatchMessageDTO batchMessage) {
-		App app = appMapper.selectByPrimaryKey(batchMessage.getAppId());
+	public SendMessageResult batchSend(BatchMessageDTO batchMessageDTO) {
+		App app = appMapper.selectByPrimaryKey(batchMessageDTO.getAppId());
 		if (app == null) {
 			throw new BaseException(BaseResultEnum.APP_NOT_EXIST);
 		}
-		logger.info("开始批量发送短信:{}", batchMessage.getContent());
-		SendMessageResult sendMessageResult = channelSMSService.batchSend(app, batchMessage);
+		Set<String> mobile = batchMessageDTO.getMobile();
+		logger.info("开始批量发送短信:{}", batchMessageDTO.getContent());
+		SendMessageResult sendMessageResult = channelSMSService.batchSend(app, batchMessageDTO);
+		try {
+			BatchMessage batchMessage = new BatchMessage();
+			batchMessage.setAppid(app.getId());
+			batchMessage.setContent(batchMessageDTO.getContent());
+			batchMessage.setTotal((short) mobile.size());
+			if (sendMessageResult.isSuccess()) {
+				batchMessage.setSendStatus(Constants.SendStatus.SENDING);
+			} else {
+				batchMessage.setSendStatus(Constants.SendStatus.FAILURE);
+				batchMessage.setFailCode(sendMessageResult.getFailCode());
+			}
+			batchMessage.setBizId(sendMessageResult.getBizId());
+			Date now = new Date();
+			batchMessage.setCreateDate(now);
+			batchMessage.setUpdateDate(now);
+			int rows = batchMessageMapper.insertSelective(batchMessage);
+			logger.info("{}插入结果:{},生成的自增id为:{}", batchMessage, rows, batchMessage.getId());
+			if (sendMessageResult.isSuccess()) {
+				String key = RedisKeys.BATCH_MESSAGE_SENDING.format(batchMessage.getId());
+				long add = stringRedisTemplate.opsForSet().add(key, mobile.toArray(new String[0]));
+				logger.info("{}集合新增:{}", key, add) ;
+			}
+		} catch (Exception e) {
+			logger.error("插入BatchMessage数据异常" + batchMessageDTO, e);
+		}
 		return sendMessageResult;
+	}
+	
+	@Override
+	public BatchMessage queryBatchMessage(String bizId) {
+		BatchMessage batchMessage = new BatchMessage();
+		batchMessage.setBizId(bizId);
+		return batchMessageMapper.selectOne(batchMessage);
+	}
+	
+	@Override
+	public int updateBatchMessageCount(int id, short sending, short success, short failure) {
+		BatchMessage batchMessage = new BatchMessage();
+		batchMessage.setId(id);
+		batchMessage.setSuccess(success);
+		batchMessage.setFailure(failure);
+		if (sending == 0) {
+			if (failure == 0) {
+				batchMessage.setSendStatus(Constants.SendStatus.SUCCESS);
+			} else {
+				batchMessage.setSendStatus(Constants.SendStatus.COMPLETE);
+			}
+		}
+		int result = batchMessageMapper.updateByPrimaryKeySelective(batchMessage);
+		logger.info("{}更新批量短信发送数量结果{}", batchMessage, result);
+		return result;
 	}
 
 }

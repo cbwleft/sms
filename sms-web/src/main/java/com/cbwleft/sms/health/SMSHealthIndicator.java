@@ -5,7 +5,7 @@ import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;
 
 import com.cbwleft.sms.config.SMSHealthConfig;
-import com.cbwleft.sms.dao.Constants;
+import com.cbwleft.sms.dao.constant.Constants;
 import com.cbwleft.sms.dao.model.Message;
 
 @Component

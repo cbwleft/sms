@@ -3,6 +3,7 @@ package com.cbwleft.sms.service;
 import java.util.Date;
 import java.util.List;
 
+import com.cbwleft.sms.dao.model.BatchMessage;
 import com.cbwleft.sms.dao.model.Message;
 import com.cbwleft.sms.dao.model.Template;
 import com.cbwleft.sms.model.dto.BatchMessageDTO;
@@ -85,4 +86,21 @@ public interface IMessageService {
 	 * @return
 	 */
 	public SendMessageResult batchSend(BatchMessageDTO batchMessage);
+
+	/**
+	 * 查询批量短信
+	 * @param bizId
+	 * @return
+	 */
+	public BatchMessage queryBatchMessage(String bizId);
+
+	/**
+	 * 更新批量发送短信结果
+	 * @param id
+	 * @param sending
+	 * @param success
+	 * @param failure
+	 * @return
+	 */
+	public int updateBatchMessageCount(int id, short sending, short success, short failure);
 }

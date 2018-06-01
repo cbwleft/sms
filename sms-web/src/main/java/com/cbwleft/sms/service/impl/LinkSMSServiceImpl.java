@@ -2,6 +2,7 @@ package com.cbwleft.sms.service.impl;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -12,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -21,8 +23,10 @@ import org.springframework.web.client.RestTemplate;
 
 import com.cbwleft.sms.config.LinkSMSConfig;
 import com.cbwleft.sms.constant.ConfigConstants;
-import com.cbwleft.sms.dao.Constants;
+import com.cbwleft.sms.dao.constant.Constants;
+import com.cbwleft.sms.dao.constant.RedisKeys;
 import com.cbwleft.sms.dao.model.App;
+import com.cbwleft.sms.dao.model.BatchMessage;
 import com.cbwleft.sms.dao.model.Message;
 import com.cbwleft.sms.dao.model.Template;
 import com.cbwleft.sms.model.dto.BatchMessageDTO;
@@ -38,6 +42,10 @@ public class LinkSMSServiceImpl implements IBatchQueryable {
 
 	private static final Logger logger = LoggerFactory.getLogger(LinkSMSServiceImpl.class);
 
+	private static final String REPORT_STATUS_SUCCESS = "1";
+
+	private static final String REPORT_STATUS_FAILURE = "2";
+
 	@Autowired
 	private LinkSMSConfig linkSMSConfig;
 
@@ -46,6 +54,9 @@ public class LinkSMSServiceImpl implements IBatchQueryable {
 
 	@Autowired
 	private IMessageService messageService;
+
+	@Autowired
+	private StringRedisTemplate stringRedisTemplate;
 
 	@Override
 	public SendMessageResult send(App app, Template template, MessageDTO message) {
@@ -100,33 +111,58 @@ public class LinkSMSServiceImpl implements IBatchQueryable {
 		logger.info("凌凯接收短信发送状态报告接口返回{}", body);
 		if (StringUtils.isEmpty(body)) {
 			logger.debug("没有新的报告数据");
-		} else if (body.endsWith("|||")) {//ID+'$$$$$'+号码+''$$$$$'+时间+'$$$$$'+报告标志+'$$$$$'+报告+'$$$$$'+报告日期+'|||'
+		} else if (body.endsWith("|||")) {// ID+'$$$$$'+号码+''$$$$$'+时间+'$$$$$'+报告标志+'$$$$$'+报告+'$$$$$'+报告日期+'|||'
 			String[] reports = body.split("\\|\\|\\|");
-			for(String report : reports) {
+			Set<Integer> batchMessageIds = new HashSet<>();
+			for (String report : reports) {
 				try {
 					String[] args = report.split("\\$\\$\\$\\$\\$");
 					String bizId = args[0];
 					String mobile = args[1];
-					String status = args[3];//报告标志：0，无状态；1，成功；2，失败；3，其他
-					String failCode = args[4];//报告：各运营商直接返回的状态报告值
-					Date receiveDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(args[5]);//2018-05-29 10:36:48
+					String status = args[3];// 报告标志：0，无状态；1，成功；2，失败；3，其他
+					String failCode = args[4];// 报告：各运营商直接返回的状态报告值
+					Date receiveDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(args[5]);// 2018-05-29 10:36:48
 					Message message = messageService.queryMessage(mobile, bizId);
 					if (message != null) {
 						byte sendStatus = Constants.SendStatus.SENDING;
-						if ("1".equals(status)) {
+						if (REPORT_STATUS_SUCCESS.equals(status)) {
 							sendStatus = Constants.SendStatus.SUCCESS;
-						} else if ("2".equals(status)) {
+						} else if (REPORT_STATUS_FAILURE.equals(status)) {
 							sendStatus = Constants.SendStatus.FAILURE;
 						}
-						QuerySendResult querySendResult = new QuerySendResult(true, sendStatus, null, receiveDate, failCode);
+						QuerySendResult querySendResult = new QuerySendResult(true, sendStatus, null, receiveDate,
+								failCode);
 						if (sendStatus != Constants.SendStatus.SENDING) {
 							messageService.updateMessageSendStatus(message, querySendResult);
 						}
 					} else {
-						logger.info("未找到对应的短信记录,可能未通过短信微服务发送或者不同环境账户未分离");
+						logger.debug("检查是否是批量发送短信");
+						BatchMessage batchMessage = messageService.queryBatchMessage(bizId);
+						if (batchMessage != null) {
+							int id = batchMessage.getId();
+							batchMessageIds.add(id);
+							stringRedisTemplate.opsForSet().remove(RedisKeys.BATCH_MESSAGE_SENDING.format(id), mobile);
+							if (REPORT_STATUS_SUCCESS.equals(status)) {
+								stringRedisTemplate.opsForSet().add(RedisKeys.BATCH_MESSAGE_SUCCESS.format(id), mobile);
+							} else if (REPORT_STATUS_FAILURE.equals(status)) {
+								stringRedisTemplate.opsForSet().add(RedisKeys.BATCH_MESSAGE_FAILURE.format(id), mobile);
+							}
+						} else {
+							logger.info("未找到对应的短信记录,可能未通过短信微服务发送或者不同环境账户未分离");
+						}
 					}
 				} catch (Exception e) {
 					logger.error("凌凯接收短信发送状态格式异常:{}", e.getMessage());
+				}
+			}
+			for (int id : batchMessageIds) {
+				try {
+					short sending = stringRedisTemplate.opsForSet().size(RedisKeys.BATCH_MESSAGE_SENDING.format(id)).shortValue();
+					short success = stringRedisTemplate.opsForSet().size(RedisKeys.BATCH_MESSAGE_SUCCESS.format(id)).shortValue();
+					short failure = stringRedisTemplate.opsForSet().size(RedisKeys.BATCH_MESSAGE_FAILURE.format(id)).shortValue();
+					messageService.updateBatchMessageCount(id, sending, success, failure);
+				} catch (Exception e) {
+					logger.error("更新批量发送短信异常:{}", e);
 				}
 			}
 		} else {
