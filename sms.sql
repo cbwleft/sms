@@ -52,8 +52,28 @@ CREATE TABLE `t_message` (
   `create_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 测试数据
 INSERT INTO t_app (id, name, private_key, prefix, validate_code_length, channel_params) VALUES (1, '应用1', '1', '短信前缀', 4, '{\"accessKeyId\":\"你的accessKeyId\",\"accessKeySecret\":\"你的accessKeySecret\"}');
 INSERT INTO t_template (id, channel_template_no, name, type, template, validate_code_key, validate_code_expire, app_id) VALUES (1, 'SMS_32505088', '用户注册验证码', 0, '验证码${code}，您正在注册成为${product}用户，感谢您的支持！', 'code', '300', 1);
+
+-- V1.1.1新增
+-- ----------------------------
+-- Table structure for t_batch_message
+-- ----------------------------
+DROP TABLE IF EXISTS `t_batch_message`;
+CREATE TABLE `t_batch_message` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '批量消息id',
+  `total` smallint(6) NOT NULL COMMENT '发送总量',
+  `content` varchar(255) NOT NULL COMMENT '发送内容',
+  `send_status` tinyint(4) NOT NULL COMMENT '发送状态（0：失败，1：接口调用成功，2：发送成功，3：发送完成）',
+  `biz_id` varchar(20) DEFAULT NULL COMMENT '短信通道id',
+  `fail_code` varchar(40) DEFAULT NULL COMMENT '短信平台发送失败代码',
+  `success` smallint(6) NOT NULL DEFAULT '0' COMMENT '发送成功数',
+  `failure` smallint(6) NOT NULL DEFAULT '0' COMMENT '发送失败数',
+  `appId` tinyint(4) NOT NULL,
+  `create_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
