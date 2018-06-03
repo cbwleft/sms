@@ -7,10 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -66,6 +68,9 @@ public class MessageServiceImpl implements IMessageService {
 	
 	@Autowired
 	private StringRedisTemplate stringRedisTemplate;
+	
+	@Autowired
+	private RedisTemplate<String, Object> redisTemplate;
 
 	@Override
 	public SendMessageResult send(MessageDTO messageDTO) {
@@ -80,8 +85,12 @@ public class MessageServiceImpl implements IMessageService {
 		
 		Map<String, Object> params = messageDTO.getParams();
 		String validateCodeKey = template.getValidateCodeKey();
+		Short validateCodeExpire = template.getValidateCodeExpire();
 		String validateCode = null;
 		if (!StringUtils.isEmpty(validateCodeKey)) {
+			if (validateCodeExpire == null || validateCodeExpire < 0) {
+				throw new BaseException(BaseResultEnum.VALIDATE_CODE_EXPIRE_ILLEGAL);
+			}
 			logger.debug("需要发送验证码");
 			validateCode = String.valueOf(params.get(validateCodeKey));
 			if (StringUtils.isEmpty(validateCode)) {
@@ -116,6 +125,10 @@ public class MessageServiceImpl implements IMessageService {
 			message.setUpdateDate(now);
 			int rows = messageMapper.insertSelective(message);
 			logger.info("{}插入结果:{},生成的自增id为:{}", message, rows, message.getId());
+			if (!StringUtils.isEmpty(validateCodeKey)) {
+				String redisKey = RedisKeys.VALIDATE_CODE_MESSAGE.format(messageDTO.getMobile(), template.getId());
+				redisTemplate.opsForValue().set(redisKey, message, validateCodeExpire, TimeUnit.SECONDS);
+			}
 			if (!result.isSuccess()) {
 				smsHealthIndicator.addSample(message);
 			}
@@ -155,13 +168,15 @@ public class MessageServiceImpl implements IMessageService {
 		if (app == null) {
 			throw new BaseException(BaseResultEnum.APP_NOT_EXIST);
 		}
-		Message message = queryLatestMessage(validateDTO.getMobile(), template);
+		String redisKey = RedisKeys.VALIDATE_CODE_MESSAGE.format(validateDTO.getMobile(), template.getId());
+		Message message = (Message) redisTemplate.opsForValue().get(redisKey);
+		//Message message = queryLatestMessage(validateDTO.getMobile(), template);
 		if (message == null) {
 			logger.debug("验证码已过期");
 			return false;
 		}
-		if (Constants.ValidateStatus.YES == message.getValidateStatus()) {
-			logger.debug("该验证码已使用");
+		if (!redisTemplate.delete(redisKey)) {
+			logger.info("并发验证短信验证码或者验证码已过期");
 			return false;
 		}
 		String validateCode = message.getValidateCode();
