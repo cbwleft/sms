@@ -1,5 +1,6 @@
 package com.cbwleft.sms.config;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -51,19 +52,23 @@ public class LinkSMSConfig {
 		return baseUrl;
 	}
 
-	@Bean
 	public StringHttpMessageConverter stringHttpMessageConverter() {
 		StringHttpMessageConverter converter = new StringHttpMessageConverter();
 		converter.setSupportedMediaTypes(Arrays.asList(MediaType.TEXT_PLAIN, MediaType.TEXT_HTML));// 凌凯接口返回text/html;charset=gb2312
 		return converter;
-
+	}
+	
+	public FormHttpMessageConverter formHttpMessageConverter() {
+		FormHttpMessageConverter formHttpMessageConverter = new FormHttpMessageConverter();
+		formHttpMessageConverter.setCharset(Charset.forName("gb2312"));
+		return formHttpMessageConverter;
 	}
 
 	@Bean
-	public RestTemplate restTemplate(RestTemplateBuilder builder, StringHttpMessageConverter stringHttpMessageConverter) {
+	public RestTemplate restTemplate(RestTemplateBuilder builder) {
 		return builder
 				.rootUri(baseUrl)
-				.messageConverters(new FormHttpMessageConverter(), stringHttpMessageConverter)
+				.messageConverters(formHttpMessageConverter(), stringHttpMessageConverter())
 				.build();
 	}
 
