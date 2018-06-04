@@ -58,9 +58,20 @@ public class LinkSMSConfig {
 		return converter;
 	}
 	
+	/**
+	 * 此处SpringBoot2.0.X和1.5.X的处理方式有较大区别。<br>
+	 * 在SpringBoot2.0.X中:<br>
+	 * 默认Content-Type: application/x-www-form-urlencoded;charset=UTF-8<br>
+	 * 并优先取Content-Type中的编码，再取setCharset中的编码，在未指定Content-Type头的情况下，永远使用UTF-8编码<br>
+	 * 在SpringBoot1.5.X中:<br>
+	 * 默认Content-Type: application/x-www-form-urlencoded<br>
+	 * 并取setCharset中的编码进行URLEncode，http服务端会按照其默认编码进行URLDecode，所以此处必须指定默认编码<br>
+	 * @see FormHttpMessageConverter#writeForm
+	 * @return
+	 */
 	public FormHttpMessageConverter formHttpMessageConverter() {
 		FormHttpMessageConverter formHttpMessageConverter = new FormHttpMessageConverter();
-		formHttpMessageConverter.setCharset(Charset.forName("gb2312"));
+		formHttpMessageConverter.setCharset(Charset.forName("gb2312"));//设置默认编码为gb2312
 		return formHttpMessageConverter;
 	}
 
