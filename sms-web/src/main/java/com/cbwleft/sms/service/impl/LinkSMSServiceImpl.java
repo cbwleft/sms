@@ -108,10 +108,10 @@ public class LinkSMSServiceImpl implements IBatchQueryable {
 		params.add("Pwd", linkSMSConfig.getPassword());
 		ResponseEntity<String> result = restTemplate.postForEntity("/GetReportSMS.aspx", params, String.class);
 		String body = result.getBody();
-		logger.info("凌凯接收短信发送状态报告接口返回{}", body);
 		if (StringUtils.isEmpty(body)) {
 			logger.debug("没有新的报告数据");
 		} else if (body.endsWith("|||")) {// ID+'$$$$$'+号码+''$$$$$'+时间+'$$$$$'+报告标志+'$$$$$'+报告+'$$$$$'+报告日期+'|||'
+			logger.info("凌凯接收短信发送状态报告接口返回{}", body);
 			String[] reports = body.split("\\|\\|\\|");
 			Map<String, BatchMessage> batchMessages = new HashMap<>();// 自己实现一级缓存
 			for (String report : reports) {
