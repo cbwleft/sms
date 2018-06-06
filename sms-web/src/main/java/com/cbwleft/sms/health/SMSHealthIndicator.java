@@ -40,8 +40,7 @@ public class SMSHealthIndicator implements HealthIndicator {
 				return Health.down().withDetail("count", count).withDetail("ratio", ratio)
 						.withDetail("lastFailCode", lastFailCode).build();
 			} else {
-				return Health.up().withDetail("count", count).withDetail("ratio", ratio)
-						.withDetail("lastFailCode", lastFailCode).build();
+				return Health.up().withDetail("count", count).withDetail("ratio", ratio).build();
 			}
 		}
 	}
@@ -60,5 +59,5 @@ public class SMSHealthIndicator implements HealthIndicator {
 			}
 		}
 	}
-	
+
 }
