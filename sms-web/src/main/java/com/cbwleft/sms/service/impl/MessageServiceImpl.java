@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.cbwleft.sms.constant.BaseResultEnum;
-import com.cbwleft.sms.dao.constant.Constants;
+import com.cbwleft.sms.dao.constant.Columns;
 import com.cbwleft.sms.dao.constant.RedisKeys;
 import com.cbwleft.sms.dao.mapper.AppMapper;
 import com.cbwleft.sms.dao.mapper.BatchMessageMapper;
@@ -112,14 +112,14 @@ public class MessageServiceImpl implements IMessageService {
 			message.setParams(new ObjectMapper().writeValueAsString(params));
 			message.setTemplateId(template.getId());
 			if (result.isSuccess()) {
-				message.setSendStatus(Constants.SendStatus.SENDING);
+				message.setSendStatus(Columns.SendStatus.SENDING);
 			} else {
-				message.setSendStatus(Constants.SendStatus.FAILURE);
+				message.setSendStatus(Columns.SendStatus.FAILURE);
 				message.setFailCode(result.getFailCode());
 			}
 			message.setBizId(result.getBizId());
 			message.setValidateCode(validateCode);
-			message.setValidateStatus(Constants.ValidateStatus.NO);
+			message.setValidateStatus(Columns.ValidateStatus.NO);
 			Date now = new Date();
 			message.setCreateDate(now);
 			message.setUpdateDate(now);
@@ -150,7 +150,7 @@ public class MessageServiceImpl implements IMessageService {
 		Template template = templateMapper.selectByPrimaryKey(message.getTemplateId());
 		App app = appMapper.selectByPrimaryKey(template.getAppId());
 		QuerySendResult querySendResult = channelSMSService.querySendStatus(app, message);
-		if (querySendResult.isSuccess() && Constants.SendStatus.SENDING != querySendResult.getSendStatus()) {
+		if (querySendResult.isSuccess() && Columns.SendStatus.SENDING != querySendResult.getSendStatus()) {
 			updateMessageSendStatus(message, querySendResult);
 		}
 		return querySendResult;
@@ -201,7 +201,7 @@ public class MessageServiceImpl implements IMessageService {
 	@Override
 	public int updateMessageValidateStatus(Message message) {
 		Message updateMessage = new Message();
-		updateMessage.setValidateStatus(Constants.ValidateStatus.YES);
+		updateMessage.setValidateStatus(Columns.ValidateStatus.YES);
 		Example example = new Example.Builder(Message.class)
 				.where(WeekendSqls.<Message>custom()
 						.andEqualTo(Message::getId, message.getId())
@@ -219,7 +219,7 @@ public class MessageServiceImpl implements IMessageService {
 				.where(WeekendSqls.<Message>custom()
 						.andEqualTo(Message::getMobile, mobile)
 						.andEqualTo(Message::getTemplateId, template.getId())
-						.andGreaterThan(Message::getSendStatus, Constants.SendStatus.FAILURE)
+						.andGreaterThan(Message::getSendStatus, Columns.SendStatus.FAILURE)
 						.andGreaterThan(Message::getCreateDate, Date.from(expire)))
 				.orderByDesc("id")//此处等同于create_date,但是具有更好的性能
 				.build();
@@ -240,9 +240,9 @@ public class MessageServiceImpl implements IMessageService {
 		Message updateMessage = new Message();
 		updateMessage.setId(message.getId());
 		updateMessage.setSendStatus(querySendResult.getSendStatus());
-		if (Constants.SendStatus.FAILURE == querySendResult.getSendStatus()) {
+		if (Columns.SendStatus.FAILURE == querySendResult.getSendStatus()) {
 			updateMessage.setFailCode(querySendResult.getFailCode());
-		} else if(Constants.SendStatus.SUCCESS == querySendResult.getSendStatus()) {
+		} else if(Columns.SendStatus.SUCCESS == querySendResult.getSendStatus()) {
 			updateMessage.setReciveDate(querySendResult.getReceiveDate());
 		}
 		int result = messageMapper.updateByPrimaryKeySelective(updateMessage);
@@ -255,7 +255,7 @@ public class MessageServiceImpl implements IMessageService {
 	public List<Message> querySendingMessages(Date fromDate) {
 		Example example = new Example.Builder(Message.class)
 				.where(WeekendSqls.<Message>custom()
-						.andEqualTo(Message::getSendStatus, Constants.SendStatus.SENDING)
+						.andEqualTo(Message::getSendStatus, Columns.SendStatus.SENDING)
 						.andGreaterThan(Message::getCreateDate, fromDate))
 				.orderByDesc("id")
 				.build();
@@ -279,10 +279,10 @@ public class MessageServiceImpl implements IMessageService {
 			batchMessage.setTotal((short) mobile.size());
 			String redisKey;
 			if (sendMessageResult.isSuccess()) {
-				batchMessage.setSendStatus(Constants.SendStatus.SENDING);
+				batchMessage.setSendStatus(Columns.SendStatus.SENDING);
 				redisKey = RedisKeys.BATCH_MESSAGE_SENDING.format(batchMessage.getId());
 			} else {
-				batchMessage.setSendStatus(Constants.SendStatus.FAILURE);
+				batchMessage.setSendStatus(Columns.SendStatus.FAILURE);
 				batchMessage.setFailCode(sendMessageResult.getFailCode());
 				batchMessage.setFailure(batchMessage.getTotal());
 				redisKey = RedisKeys.BATCH_MESSAGE_FAILURE.format(batchMessage.getId());
@@ -316,9 +316,9 @@ public class MessageServiceImpl implements IMessageService {
 		batchMessage.setFailure(failure);
 		if (sending == 0) {
 			if (failure == 0) {
-				batchMessage.setSendStatus(Constants.SendStatus.SUCCESS);
+				batchMessage.setSendStatus(Columns.SendStatus.SUCCESS);
 			} else {
-				batchMessage.setSendStatus(Constants.SendStatus.COMPLETE);
+				batchMessage.setSendStatus(Columns.SendStatus.COMPLETE);
 			}
 		}
 		int result = batchMessageMapper.updateByPrimaryKeySelective(batchMessage);

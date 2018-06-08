@@ -22,7 +22,7 @@ import com.aliyuncs.dysmsapi.model.v20170525.SendSmsRequest;
 import com.aliyuncs.dysmsapi.model.v20170525.SendSmsResponse;
 import com.aliyuncs.http.MethodType;
 import com.cbwleft.sms.constant.ConfigConstants;
-import com.cbwleft.sms.dao.constant.Constants;
+import com.cbwleft.sms.dao.constant.Columns;
 import com.cbwleft.sms.dao.model.App;
 import com.cbwleft.sms.dao.model.Message;
 import com.cbwleft.sms.dao.model.Template;
@@ -88,7 +88,7 @@ public class AliSMSServiceImpl implements IChannelSMSService {
 				List<SmsSendDetailDTO> list = querySendDetailsResponse.getSmsSendDetailDTOs();
 				if (CollectionUtils.isEmpty(list)) {
 					if (Duration.between(message.getCreateDate().toInstant(), Instant.now()).toMinutes() > 5) {
-						return new QuerySendResult(true, Constants.SendStatus.FAILURE, null, null, "no match send record");
+						return new QuerySendResult(true, Columns.SendStatus.FAILURE, null, null, "no match send record");
 					} else {
 						logger.info("未查询到对应的短信记录,可能是因为阿里读写库同步延迟");
 						return new QuerySendResult(false);
@@ -97,16 +97,16 @@ public class AliSMSServiceImpl implements IChannelSMSService {
 				SmsSendDetailDTO smsSendDetailDTO = list.get(0);
 				logger.info("阿里云通讯短信查询结果为:{}", new ObjectMapper().writeValueAsString(smsSendDetailDTO));
 				int aliSendStatus = smsSendDetailDTO.getSendStatus().intValue();// 1：等待回执，2：发送失败，3：发送成功
-				byte sendStatus = Constants.SendStatus.SENDING;
+				byte sendStatus = Columns.SendStatus.SENDING;
 				Date reciveDate = null;
 				String failCode = null;
 				if (aliSendStatus == 2) {
-					sendStatus = Constants.SendStatus.FAILURE;
+					sendStatus = Columns.SendStatus.FAILURE;
 					failCode = smsSendDetailDTO.getErrCode();
 				} else if (aliSendStatus == 3) {
 					reciveDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")// 2017-05-25 00:00:00
 							.parse(smsSendDetailDTO.getReceiveDate());
-					sendStatus = Constants.SendStatus.SUCCESS;
+					sendStatus = Columns.SendStatus.SUCCESS;
 				}
 				return new QuerySendResult(true, sendStatus, smsSendDetailDTO.getContent(), reciveDate,
 						failCode);

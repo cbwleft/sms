@@ -23,7 +23,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.cbwleft.sms.config.LinkSMSConfig;
 import com.cbwleft.sms.constant.ConfigConstants;
-import com.cbwleft.sms.dao.constant.Constants;
+import com.cbwleft.sms.dao.constant.Columns;
 import com.cbwleft.sms.dao.constant.RedisKeys;
 import com.cbwleft.sms.dao.model.App;
 import com.cbwleft.sms.dao.model.BatchMessage;
@@ -124,15 +124,15 @@ public class LinkSMSServiceImpl implements IBatchQueryable {
 					Date receiveDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(args[5]);// 2018-05-29 10:36:48
 					Message message = messageService.queryMessage(mobile, bizId);
 					if (message != null) {
-						byte sendStatus = Constants.SendStatus.SENDING;
+						byte sendStatus = Columns.SendStatus.SENDING;
 						if (REPORT_STATUS_SUCCESS.equals(status)) {
-							sendStatus = Constants.SendStatus.SUCCESS;
+							sendStatus = Columns.SendStatus.SUCCESS;
 						} else if (REPORT_STATUS_FAILURE.equals(status)) {
-							sendStatus = Constants.SendStatus.FAILURE;
+							sendStatus = Columns.SendStatus.FAILURE;
 						}
 						QuerySendResult querySendResult = new QuerySendResult(true, sendStatus, null, receiveDate,
 								failCode);
-						if (sendStatus != Constants.SendStatus.SENDING) {
+						if (sendStatus != Columns.SendStatus.SENDING) {
 							messageService.updateMessageSendStatus(message, querySendResult);
 						}
 					} else {

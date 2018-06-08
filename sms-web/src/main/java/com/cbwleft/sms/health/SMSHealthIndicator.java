@@ -5,7 +5,7 @@ import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;
 
 import com.cbwleft.sms.config.SMSHealthConfig;
-import com.cbwleft.sms.dao.constant.Constants;
+import com.cbwleft.sms.dao.constant.Columns;
 import com.cbwleft.sms.dao.model.Message;
 
 @Component
@@ -46,10 +46,10 @@ public class SMSHealthIndicator implements HealthIndicator {
 	}
 
 	public synchronized void addSample(Message message) {
-		if (message.getSendStatus() == Constants.SendStatus.SUCCESS) {
+		if (message.getSendStatus() == Columns.SendStatus.SUCCESS) {
 			int index = (int) (count++ % samples.length);
 			samples[index] = true;
-		} else if (message.getSendStatus() == Constants.SendStatus.FAILURE) {
+		} else if (message.getSendStatus() == Columns.SendStatus.FAILURE) {
 			if ("isv.BUSINESS_LIMIT_CONTROL".equals(message.getFailCode())) {
 				return;// 流控不作为统计样本
 			} else {
