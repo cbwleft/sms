@@ -17,7 +17,7 @@ public interface IChannelSMSService {
 	 * @param message
 	 * @return
 	 */
-	public SendMessageResult send(App app, Template template, MessageDTO message);
+	SendMessageResult send(App app, Template template, MessageDTO message);
 
 	/**
 	 * 查询发送状态
@@ -25,7 +25,7 @@ public interface IChannelSMSService {
 	 * @param message
 	 * @return
 	 */
-	public QuerySendResult querySendStatus(App app, Message message);
+	QuerySendResult querySendStatus(App app, Message message);
 
 	/**
 	 * 调用具体的短信平台批量发送短信
@@ -33,6 +33,6 @@ public interface IChannelSMSService {
 	 * @param batchMessage
 	 * @return
 	 */
-	public SendMessageResult batchSend(App app, BatchMessageDTO batchMessage);
+	SendMessageResult batchSend(App app, BatchMessageDTO batchMessage);
 
 }

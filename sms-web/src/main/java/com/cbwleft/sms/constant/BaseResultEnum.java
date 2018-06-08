@@ -14,7 +14,6 @@ public enum BaseResultEnum {
 	NOT_VALIDATE_CODE_TEMPLATE(false, -1001),
 	VALIDATE_CODE_EXPIRE_ILLEGAL(false, -1002),
 	APP_NOT_EXIST(false, -1100),
-	ILLEGAL_CHANNEL_PARAMS(false, -1110),
 	SERVER_ERROR(false, -9999);
 
 	boolean success;

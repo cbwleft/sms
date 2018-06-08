@@ -5,6 +5,6 @@ public interface IBatchQueryable extends IChannelSMSService {
 	/**
 	 * 批量查询更新发送状态
 	 */
-	public void batchQueryAndUpdateSendStatus();
+	void batchQueryAndUpdateSendStatus();
 	
 }

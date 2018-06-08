@@ -28,7 +28,7 @@ import javax.validation.constraints.Pattern;
 @ReportAsSingleViolation
 public @interface Mobile {
 	
-	String message() default "{com.cbwleft.sms.constraints.Mobile.messsage}";
+	String message() default "{com.cbwleft.sms.constraints.Mobile.message}";
 
     Class<?>[] groups() default { };
 

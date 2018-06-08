@@ -141,7 +141,7 @@ public class MessageServiceImpl implements IMessageService {
 	@Override
 	public String getValidateCode(byte length) {
 		int base = (int) Math.pow(10, length - 1);
-		int result = new Random().nextInt((int) (9 * base)) + base;
+		int result = new Random().nextInt(9 * base) + base;
 		return String.valueOf(result);
 	}
 	

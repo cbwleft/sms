@@ -24,7 +24,7 @@ import org.hibernate.validator.constraints.Range;
 @ReportAsSingleViolation
 public @interface TemplateId {
 	
-	String message() default "{com.cbwleft.sms.constraints.TemplateId.messsage}";
+	String message() default "{com.cbwleft.sms.constraints.TemplateId.message}";
 
     Class<?>[] groups() default { };
 

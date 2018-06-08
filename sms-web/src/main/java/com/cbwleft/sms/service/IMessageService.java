@@ -19,14 +19,14 @@ public interface IMessageService {
 	 * @param message
 	 * @return
 	 */
-	public SendMessageResult send(MessageDTO message);
+	SendMessageResult send(MessageDTO message);
 
 	/**
 	 * 校验验证码
 	 * @param validateCode
 	 * @return
 	 */
-	public boolean check(ValidateCodeDTO validateCode);
+	boolean check(ValidateCodeDTO validateCode);
 	
 	/**
 	 * 查询最近一条验证码短信
@@ -34,35 +34,35 @@ public interface IMessageService {
 	 * @param template 需要id,validateExpire字段
 	 * @return
 	 */
-	public Message queryLatestMessage(String mobile, Template template);
+	Message queryLatestMessage(String mobile, Template template);
 
 	/**
 	 * 将短信验证状态修改为已验证
 	 * @param message
 	 * @return
 	 */
-	public int updateMessageValidateStatus(Message message);
+	int updateMessageValidateStatus(Message message);
 
 	/**
 	 * 获取验证码
 	 * @param length 验证码长度
 	 * @return
 	 */
-	public String getValidateCode(byte length);
+	String getValidateCode(byte length);
 
 	/**
 	 * 查询并更新发送状态
 	 * @param message
 	 * @return
 	 */
-	public QuerySendResult queryAndUpdateSendStatus(Message message);
+	QuerySendResult queryAndUpdateSendStatus(Message message);
 
 	/**
 	 * 查询发送中的短信
 	 * @param fromDate 查询该时间点之后的数据
 	 * @return
 	 */
-	public List<Message> querySendingMessages(Date fromDate);
+	List<Message> querySendingMessages(Date fromDate);
 
 	/**
 	 * 根据手机号和第三方id查询短信
@@ -70,7 +70,7 @@ public interface IMessageService {
 	 * @param bizId
 	 * @return
 	 */
-	public Message queryMessage(String mobile, String bizId);
+	Message queryMessage(String mobile, String bizId);
 
 	/**
 	 * 更新发送状态
@@ -78,21 +78,21 @@ public interface IMessageService {
 	 * @param querySendResult 短信查询结果
 	 * @return
 	 */
-	public int updateMessageSendStatus(Message message, QuerySendResult querySendResult);
+	int updateMessageSendStatus(Message message, QuerySendResult querySendResult);
 
 	/**
 	 * 批量发送短信
 	 * @param batchMessage
 	 * @return
 	 */
-	public SendMessageResult batchSend(BatchMessageDTO batchMessage);
+	SendMessageResult batchSend(BatchMessageDTO batchMessage);
 
 	/**
 	 * 查询批量短信
 	 * @param bizId
 	 * @return
 	 */
-	public BatchMessage queryBatchMessage(String bizId);
+	BatchMessage queryBatchMessage(String bizId);
 
 	/**
 	 * 更新批量发送短信结果
@@ -102,5 +102,5 @@ public interface IMessageService {
 	 * @param failure
 	 * @return
 	 */
-	public int updateBatchMessageCount(int id, short sending, short success, short failure);
+	int updateBatchMessageCount(int id, short sending, short success, short failure);
 }

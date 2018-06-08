@@ -68,7 +68,7 @@ public class MessageController extends BaseController {
 	/**
 	 * 批量发送短信
 	 * 
-	 * @param message
+	 * @param batchMessage
 	 * @return
 	 */
 	@PostMapping("/batchSend")

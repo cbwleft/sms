@@ -52,7 +52,7 @@ public class LinkSMSConfig {
 		return baseUrl;
 	}
 
-	public StringHttpMessageConverter stringHttpMessageConverter() {
+	private StringHttpMessageConverter stringHttpMessageConverter() {
 		StringHttpMessageConverter converter = new StringHttpMessageConverter();
 		converter.setSupportedMediaTypes(Arrays.asList(MediaType.TEXT_PLAIN, MediaType.TEXT_HTML));// 凌凯接口返回text/html;charset=gb2312
 		return converter;
@@ -69,7 +69,7 @@ public class LinkSMSConfig {
 	 * @see FormHttpMessageConverter#writeForm
 	 * @return
 	 */
-	public FormHttpMessageConverter formHttpMessageConverter() {
+	private FormHttpMessageConverter formHttpMessageConverter() {
 		FormHttpMessageConverter formHttpMessageConverter = new FormHttpMessageConverter();
 		formHttpMessageConverter.setCharset(Charset.forName("gb2312"));//设置默认编码为gb2312
 		return formHttpMessageConverter;

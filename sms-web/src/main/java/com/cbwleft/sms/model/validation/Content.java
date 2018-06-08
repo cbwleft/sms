@@ -24,7 +24,7 @@ import org.hibernate.validator.constraints.Length;
 @ReportAsSingleViolation
 public @interface Content {
 	
-	String message() default "{com.cbwleft.sms.constraints.Content.messsage}";
+	String message() default "{com.cbwleft.sms.constraints.Content.message}";
 
     Class<?>[] groups() default { };
 

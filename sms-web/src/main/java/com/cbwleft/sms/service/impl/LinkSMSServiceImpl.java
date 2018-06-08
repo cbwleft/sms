@@ -88,7 +88,7 @@ public class LinkSMSServiceImpl implements IBatchQueryable {
 	private String renderString(String content, Map<String, Object> map) {
 		Set<Entry<String, Object>> sets = map.entrySet();
 		for (Entry<String, Object> entry : sets) {
-			String regex = "\\$\\{" + entry.getKey() + "\\}";
+			String regex = "\\$\\{" + entry.getKey() + "}";
 			Pattern pattern = Pattern.compile(regex);
 			Matcher matcher = pattern.matcher(content);
 			content = matcher.replaceAll(String.valueOf(entry.getValue()));

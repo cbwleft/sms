@@ -52,7 +52,7 @@ public class AliSMSServiceImpl implements IChannelSMSService {
 			request.setTemplateCode(template.getChannelTemplateNo());
 			Map<String, Object> params = message.getParams();
 			request.setTemplateParam(new ObjectMapper().writeValueAsString(params));
-			SendSmsResponse sendSmsResponse = null;
+			SendSmsResponse sendSmsResponse;
 			sendSmsResponse = acsClient.getAcsResponse(request);
 			if ("OK".equals(sendSmsResponse.getCode())) {
 				return new SendMessageResult(true, sendSmsResponse.getBizId());

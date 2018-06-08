@@ -9,11 +9,6 @@ public class BaseException extends RuntimeException{
 	private BaseResultEnum baseResultEnum;
 	
 	private String msg;
-	
-	public BaseException(BaseResultEnum baseResultEnum, String msg) {
-		this.baseResultEnum = baseResultEnum;
-		this.msg = msg;
-	}
 
 	public BaseException(BaseResultEnum baseResultEnum) {
 		this.baseResultEnum = baseResultEnum;
