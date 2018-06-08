@@ -2,3 +2,4 @@
 *.project
 *.prefs
 *.DS_Store
+/.idea/

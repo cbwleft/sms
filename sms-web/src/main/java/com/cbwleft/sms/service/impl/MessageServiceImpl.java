@@ -277,11 +277,15 @@ public class MessageServiceImpl implements IMessageService {
 			batchMessage.setAppid(app.getId());
 			batchMessage.setContent(batchMessageDTO.getContent());
 			batchMessage.setTotal((short) mobile.size());
+			String redisKey;
 			if (sendMessageResult.isSuccess()) {
 				batchMessage.setSendStatus(Constants.SendStatus.SENDING);
+				redisKey = RedisKeys.BATCH_MESSAGE_SENDING.format(batchMessage.getId());
 			} else {
 				batchMessage.setSendStatus(Constants.SendStatus.FAILURE);
 				batchMessage.setFailCode(sendMessageResult.getFailCode());
+				batchMessage.setFailure(batchMessage.getTotal());
+				redisKey = RedisKeys.BATCH_MESSAGE_FAILURE.format(batchMessage.getId());
 			}
 			batchMessage.setBizId(sendMessageResult.getBizId());
 			Date now = new Date();
@@ -289,11 +293,8 @@ public class MessageServiceImpl implements IMessageService {
 			batchMessage.setUpdateDate(now);
 			int rows = batchMessageMapper.insertSelective(batchMessage);
 			logger.info("{}插入结果:{},生成的自增id为:{}", batchMessage, rows, batchMessage.getId());
-			if (sendMessageResult.isSuccess()) {
-				String key = RedisKeys.BATCH_MESSAGE_SENDING.format(batchMessage.getId());
-				long add = stringRedisTemplate.opsForSet().add(key, mobile.toArray(new String[0]));
-				logger.info("{}集合新增:{}", key, add) ;
-			}
+			long add = stringRedisTemplate.opsForSet().add(redisKey, mobile.toArray(new String[0]));
+			logger.info("{}集合新增:{}", redisKey, add) ;
 		} catch (Exception e) {
 			logger.error("插入BatchMessage数据异常" + batchMessageDTO, e);
 		}

@@ -35,9 +35,7 @@ public class QuerySendTask {
 		}else {
 			Date yesterday = Date.from(Instant.now().minus(Duration.ofDays(1)));
 			List<Message> list = messageService.querySendingMessages(yesterday);
-			list.forEach(message -> {
-				messageService.queryAndUpdateSendStatus(message);
-			});
+			list.forEach(messageService::queryAndUpdateSendStatus);
 		}
 	}
 

@@ -20,7 +20,7 @@ public enum BaseResultEnum {
 	boolean success;
 	int code;
 
-	private BaseResultEnum(boolean success, int code) {
+	BaseResultEnum(boolean success, int code) {
 		this.success = success;
 		this.code = code;
 	}
