@@ -77,3 +77,9 @@ CREATE TABLE `t_batch_message` (
   `update_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE `t_message`
+MODIFY COLUMN `fail_code`  varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '短信平台发送失败代码' AFTER `validate_status`;
+
+ALTER TABLE `t_batch_message`
+MODIFY COLUMN `fail_code`  varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '短信平台发送失败代码' AFTER `biz_id`;
