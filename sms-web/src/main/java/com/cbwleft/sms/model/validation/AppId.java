@@ -18,13 +18,13 @@ import org.hibernate.validator.constraints.Range;
 @Documented
 @Constraint(validatedBy = { })
 @NotNull
-@Range(min = 0, max = Short.MAX_VALUE)
+@Range(min = 0, max = Byte.MAX_VALUE)
 @Target({ FIELD })
 @Retention(RUNTIME)
 @ReportAsSingleViolation
-public @interface TemplateId {
+public @interface AppId {
 	
-	String message() default "{com.cbwleft.sms.constraints.TemplateId.message}";
+	String message() default "{com.cbwleft.sms.constraints.AppId.message}";
 
     Class<?>[] groups() default { };
 

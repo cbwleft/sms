@@ -1,7 +1,7 @@
 # SMS微服务
 
 ### 项目介绍
-基于Spring Boot 2.0.1.RELEASE，阿里云通讯实现的短信微服务。
+基于Spring Boot 2.0.2.RELEASE实现的短信微服务。目前接入了阿里云通讯、凌凯短信平台。<br>
 除了支持发送普通短信以外，封装了短信验证码发送、验证码校验这种常见的应用场景。
 
 ### 为什么需要短信微服务
@@ -17,10 +17,11 @@
 ### 如何接入
 如果您正在使用[Spring Cloud](https://projects.spring.io/spring-cloud/ "spring cloud")，只需要在sms工程的pom中增加spring-cloud-dependencies、spring-cloud-starter-eureka的依赖。<br>
 如果您没有使用Spring Cloud，Spring Boot可以很方便地作为单体应用或者集群部署，配合nginx等反向代理进行远程调用使用。<br>
-**如果您没有使用阿里云通讯**，该工程将对短信SDK的依赖限制在sms工程的AliSMSServiceImpl类中，您只需要通过实现IChannelSMSService接口就可以很方便地进行短信平台的替换。
+可以通过更改application.yml中spring.profiles.include属性进行短信平台的切换。<br>
+**如果您使用了其它的短信通道**，只需要通过实现IChannelSMSService接口就可以很方便地进行短信平台的替换。
 
 ### 技术选型
-1. Spring Boot 2.0.1.RELEASE
+1. Spring Boot 2.0.2.RELEASE
 2. Hibernate Validator 6.0.9.Final
 3. Mybatis 3.4.5
 4. MyBatis 通用 Mapper + 分页插件 PageHelper
@@ -31,19 +32,27 @@
 sms-parent
 ├── sms-web -- spring boot启动入口
 ├── sms-dal -- 数据持久层
-├── sms-mgr -- 管理后台(开发中)
 ```
 ### 项目测试
 1. 运行sms.sql（需要mysql 5.6以上）<br>
-2. 修改application.yml中的数据库地址<br>
+2. 修改application.yml中的数据库、redis地址<br>
 3. 运行sms工程，访问[http://localhost:8000/swagger-ui.html#/](http://localhost:8000/swagger-ui.html#/)进行接口测试<br>
 4. (可选)目前管理后台基于guns开发，[源代码地址](https://github.com/cbwleft/guns/tree/sms/master)sms/master分支
 
+### 更新记录
+***
+
+版本 |日期 |描述
+----- | --------- | -------
+1.0.0 |2018-05-29 |阿里云通讯单短信通道
+1.1.0 |2018-05-31 |增加凌凯短信可选实现
+1.1.1 |2018-06-01 |增加批量发送短信接口（新增redis依赖）
+1.2.0 |计划中      |多短信通道自动切换
+
 ### 开发计划
 ```
-+ 管理后台业务与guns解耦
++ 多短信通道自动切换
 + 接口鉴权
++ 更多通道支持
 + docker构建支持
-+ 群发短信支持
-+ 其它短信渠道对接
 ```

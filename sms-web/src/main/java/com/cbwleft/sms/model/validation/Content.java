@@ -10,21 +10,21 @@ import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 import javax.validation.ReportAsSingleViolation;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 
-import org.hibernate.validator.constraints.Range;
+import org.hibernate.validator.constraints.Length;
 
 
 @Documented
 @Constraint(validatedBy = { })
-@NotNull
-@Range(min = 0, max = Short.MAX_VALUE)
+@NotBlank
+@Length(max = 100)
 @Target({ FIELD })
 @Retention(RUNTIME)
 @ReportAsSingleViolation
-public @interface TemplateId {
+public @interface Content {
 	
-	String message() default "{com.cbwleft.sms.constraints.TemplateId.message}";
+	String message() default "{com.cbwleft.sms.constraints.Content.message}";
 
     Class<?>[] groups() default { };
 

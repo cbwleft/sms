@@ -1,5 +1,10 @@
-package com.cbwleft.sms.model.vo;
+package com.cbwleft.sms.constant;
 
+/**
+ * 接口错误码
+ * @author cbwleft
+ *
+ */
 public enum BaseResultEnum {
 
 	SUCCESS(true, 1), 
@@ -7,14 +12,15 @@ public enum BaseResultEnum {
 	ILLEGAL_ARGUMENT(false, -1),
 	TEMPLATE_NOT_EXIST(false, -1000),
 	NOT_VALIDATE_CODE_TEMPLATE(false, -1001),
+	VALIDATE_CODE_EXPIRE_ILLEGAL(false, -1002),
 	APP_NOT_EXIST(false, -1100),
-	ILLEGAL_CHANNEL_PARAMS(false, -1110),
+	SEND_TOO_FREQUENTLY(false, -2000),
 	SERVER_ERROR(false, -9999);
 
 	boolean success;
 	int code;
 
-	private BaseResultEnum(boolean success, int code) {
+	BaseResultEnum(boolean success, int code) {
 		this.success = success;
 		this.code = code;
 	}
@@ -23,16 +29,8 @@ public enum BaseResultEnum {
 		return success;
 	}
 
-	public void setSuccess(boolean success) {
-		this.success = success;
-	}
-
 	public int getCode() {
 		return code;
 	}
 
-	public void setCode(int code) {
-		this.code = code;
-	}
-	
 }

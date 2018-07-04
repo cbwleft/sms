@@ -50,6 +50,9 @@
         <table tableName="t_message" domainObjectName="Message">
         	<generatedKey column="Id" sqlStatement="JDBC"/>
         </table>
+        <table tableName="t_batch_message" domainObjectName="BatchMessage">
+        	<generatedKey column="Id" sqlStatement="JDBC"/>
+        </table>
 
     </context>
 

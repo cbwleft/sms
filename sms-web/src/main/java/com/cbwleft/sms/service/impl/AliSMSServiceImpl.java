@@ -1,107 +1,94 @@
 package com.cbwleft.sms.service.impl;
 
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.aliyuncs.exceptions.ClientException;
+import com.cbwleft.sms.constant.BaseResultEnum;
+import com.cbwleft.sms.exception.BaseException;
+import com.cbwleft.sms.exception.ChannelException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
-import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.IAcsClient;
 import com.aliyuncs.dysmsapi.model.v20170525.QuerySendDetailsRequest;
 import com.aliyuncs.dysmsapi.model.v20170525.QuerySendDetailsResponse;
 import com.aliyuncs.dysmsapi.model.v20170525.QuerySendDetailsResponse.SmsSendDetailDTO;
 import com.aliyuncs.dysmsapi.model.v20170525.SendSmsRequest;
 import com.aliyuncs.dysmsapi.model.v20170525.SendSmsResponse;
-import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.http.MethodType;
-import com.aliyuncs.profile.DefaultProfile;
-import com.aliyuncs.profile.IClientProfile;
-import com.cbwleft.sms.dao.Constants;
+import com.cbwleft.sms.constant.ConfigConstants;
+import com.cbwleft.sms.dao.constant.Columns;
 import com.cbwleft.sms.dao.model.App;
 import com.cbwleft.sms.dao.model.Message;
 import com.cbwleft.sms.dao.model.Template;
+import com.cbwleft.sms.model.dto.BatchMessageDTO;
 import com.cbwleft.sms.model.dto.MessageDTO;
 import com.cbwleft.sms.model.dto.QuerySendResult;
 import com.cbwleft.sms.model.dto.SendMessageResult;
-import com.cbwleft.sms.model.vo.BaseException;
-import com.cbwleft.sms.model.vo.BaseResultEnum;
 import com.cbwleft.sms.service.IChannelSMSService;
-import com.cbwleft.sms.service.IMessageService;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
+@Profile(ConfigConstants.ALI_SMS)
 public class AliSMSServiceImpl implements IChannelSMSService {
+
+
+	private static final String SUCCESS = "OK";
+
+	private static final String LIMIT_CONTROL = "isv.BUSINESS_LIMIT_CONTROL";
+
+	private static final String OUT_OF_SERVICE = "isv.OUT_OF_SERVICE";
 
 	private static final Logger logger = LoggerFactory.getLogger(AliSMSServiceImpl.class);
 
 	@Autowired
-	private IMessageService messageService;
+	private IAcsClient acsClient;
 
 	@Override
-	public SendMessageResult send(App app, Template template, MessageDTO message) {
-		IAcsClient acsClient = null;
+	public SendMessageResult send(App app, Template template, MessageDTO message) throws ChannelException {
+		SendSmsRequest request = new SendSmsRequest();
+		request.setMethod(MethodType.POST);
+		request.setPhoneNumbers(message.getMobile());
+		request.setSignName(app.getPrefix());
+		request.setTemplateCode(template.getChannelTemplateNo());
+		Map<String, Object> params = message.getParams();
 		try {
-			String channelParams = app.getChannelParams();
-			AliSMSConfig config = new ObjectMapper().readValue(channelParams, AliSMSConfig.class);
-			acsClient = config.acsClient();
-		} catch (JsonParseException | JsonMappingException e) {
-			throw new BaseException(BaseResultEnum.ILLEGAL_CHANNEL_PARAMS);
-		} catch (Exception e) {
+			request.setTemplateParam(new ObjectMapper().writeValueAsString(params));
+		} catch (JsonProcessingException e) {
 			throw new RuntimeException(e);
 		}
-		String validateCode = null;
+		SendSmsResponse sendSmsResponse;
 		try {
-			SendSmsRequest request = new SendSmsRequest();
-			request.setMethod(MethodType.POST);
-			request.setPhoneNumbers(message.getMobile());
-			request.setSignName(app.getPrefix());
-			request.setTemplateCode(template.getChannelTemplateNo());
-			String validateCodeKey = template.getValidateCodeKey();
-			Map<String, Object> params = message.getParams();
-			if (!StringUtils.isEmpty(validateCodeKey)) {
-				logger.debug("需要发送验证码");
-				validateCode = String.valueOf(params.get(validateCodeKey));
-				if (StringUtils.isEmpty(validateCode)) {
-					logger.info("参数中包含验证码{},系统不生成新的验证码", params.get(validateCodeKey));
-				} else {
-					validateCode = messageService.getValidateCode(app.getValidateCodeLength());
-					logger.debug("系统生成的验证码为{}", validateCode);
-					params = new HashMap<>(params);// clone参数,方法不应该对参数本身做修改
-					params.put(validateCodeKey, validateCode);
-				}
-			}
-			request.setTemplateParam(new ObjectMapper().writeValueAsString(params));
-			SendSmsResponse sendSmsResponse = null;
 			sendSmsResponse = acsClient.getAcsResponse(request);
-			if ("OK".equals(sendSmsResponse.getCode())) {
-				return new SendMessageResult(true, validateCode, sendSmsResponse.getBizId());
-			} else {
-				logger.warn("短信发送失败,原因:{},错误代码:{},请求Id:{}", sendSmsResponse.getMessage(), sendSmsResponse.getCode(),
-						sendSmsResponse.getRequestId());
-				return new SendMessageResult(validateCode, sendSmsResponse.getCode(), sendSmsResponse.getBizId());
-			}
-		} catch (Exception e) {
-			logger.error("短信接口异常", e);
-			return new SendMessageResult(validateCode, e.getMessage(), null);
+		} catch (ClientException e) {
+			throw new ChannelException(e);
+		}
+		if (SUCCESS.equals(sendSmsResponse.getCode())) {
+			return new SendMessageResult(true, sendSmsResponse.getBizId());
+		} else if (LIMIT_CONTROL.equals(sendSmsResponse.getCode())) {
+			throw new BaseException(BaseResultEnum.SEND_TOO_FREQUENTLY, "短信发送过于频繁," + sendSmsResponse.getMessage());
+		} else if (OUT_OF_SERVICE.equals(sendSmsResponse.getCode())) {
+			throw new ChannelException(OUT_OF_SERVICE);
+		} else {
+			logger.warn("阿里云通讯短信发送失败,原因:{},错误代码:{},请求Id:{}", sendSmsResponse.getMessage(), sendSmsResponse.getCode(),
+					sendSmsResponse.getRequestId());
+			return new SendMessageResult(sendSmsResponse.getCode(), sendSmsResponse.getBizId());
 		}
 	}
 
 	@Override
 	public QuerySendResult querySendStatus(App app, Message message) {
 		try {
-			String channelParams = app.getChannelParams();
-			AliSMSConfig config = new ObjectMapper().readValue(channelParams, AliSMSConfig.class);
-			IAcsClient acsClient = config.acsClient();
 			QuerySendDetailsRequest request = new QuerySendDetailsRequest();
 			// 必填-号码
 			request.setPhoneNumber(message.getMobile());
@@ -119,59 +106,41 @@ public class AliSMSServiceImpl implements IChannelSMSService {
 			if ("OK".equals(querySendDetailsResponse.getCode())) {
 				List<SmsSendDetailDTO> list = querySendDetailsResponse.getSmsSendDetailDTOs();
 				if (CollectionUtils.isEmpty(list)) {
-					return new QuerySendResult(true, Constants.SendStatus.FAILURE, null, null, "no match send record");
+					if (Duration.between(message.getCreateDate().toInstant(), Instant.now()).toMinutes() > 5) {
+						return new QuerySendResult(true, Columns.SendStatus.FAILURE, null, null, "no match send record");
+					} else {
+						logger.info("未查询到对应的短信记录,可能是因为阿里读写库同步延迟");
+						return new QuerySendResult(false);
+					}
 				}
 				SmsSendDetailDTO smsSendDetailDTO = list.get(0);
-				logger.info("短信查询结果为:{}", new ObjectMapper().writeValueAsString(smsSendDetailDTO));
+				logger.info("阿里云通讯短信查询结果为:{}", new ObjectMapper().writeValueAsString(smsSendDetailDTO));
 				int aliSendStatus = smsSendDetailDTO.getSendStatus().intValue();// 1：等待回执，2：发送失败，3：发送成功
-				byte sendStatus = 0;
-				Date reciveDate = null;
+				byte sendStatus = Columns.SendStatus.SENDING;
+				Date receiveDate = null;
 				String failCode = null;
-				if (aliSendStatus == 1) {
-					sendStatus = Constants.SendStatus.SENDING;
-				} else if (aliSendStatus == 2) {
-					sendStatus = Constants.SendStatus.FAILURE;
+				if (aliSendStatus == 2) {
+					sendStatus = Columns.SendStatus.FAILURE;
 					failCode = smsSendDetailDTO.getErrCode();
 				} else if (aliSendStatus == 3) {
-					reciveDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")// 2017-05-25 00:00:00
+					receiveDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")// 2017-05-25 00:00:00
 							.parse(smsSendDetailDTO.getReceiveDate());
-					sendStatus = Constants.SendStatus.SUCCESS;
+					sendStatus = Columns.SendStatus.SUCCESS;
 				}
-				return new QuerySendResult(true, sendStatus, smsSendDetailDTO.getContent(), reciveDate,
+				return new QuerySendResult(true, sendStatus, smsSendDetailDTO.getContent(), receiveDate,
 						failCode);
 			} else {
 				return new QuerySendResult(false);
 			}
 		} catch (Exception e) {
-			logger.error("查询短信接口异常", e);
+			logger.error("阿里云通讯查询短信接口异常", e);
 			return new QuerySendResult(false);
 		}
 	}
 
-	private static class AliSMSConfig {
-
-		private final String product = "Dysmsapi";// 短信API产品名称（短信产品名固定，无需修改）
-		private final String domain = "dysmsapi.aliyuncs.com";// 短信API产品域名（接口地址固定，无需修改）
-		private String accessKeyId;// 你的accessKeyId,参考本文档步骤2
-		private String accessKeySecret;// 你的accessKeySecret，参考本文档步骤2
-
-		@SuppressWarnings("unused")
-		public void setAccessKeyId(String accessKeyId) {
-			this.accessKeyId = accessKeyId;
-		}
-
-		@SuppressWarnings("unused")
-		public void setAccessKeySecret(String accessKeySecret) {
-			this.accessKeySecret = accessKeySecret;
-		}
-
-		public IAcsClient acsClient() throws ClientException {
-			IClientProfile profile = DefaultProfile.getProfile("cn-hangzhou", accessKeyId, accessKeySecret);
-			DefaultProfile.addEndpoint("cn-hangzhou", "cn-hangzhou", product, domain);
-			IAcsClient acsClient = new DefaultAcsClient(profile);
-			return acsClient;
-		}
-
+	@Override
+	public SendMessageResult batchSend(App app, BatchMessageDTO batchMessage) {
+		throw new UnsupportedOperationException();
 	}
 
 }

@@ -61,8 +61,8 @@ public class Message {
     /**
      * 收到短信时间
      */
-    @Column(name = "recive_date")
-    private Date reciveDate;
+    @Column(name = "receive_date")
+    private Date receiveDate;
 
     /**
      * 创建时间
@@ -241,19 +241,19 @@ public class Message {
     /**
      * 获取收到短信时间
      *
-     * @return recive_date - 收到短信时间
+     * @return receive_date - 收到短信时间
      */
-    public Date getReciveDate() {
-        return reciveDate;
+    public Date getReceiveDate() {
+        return receiveDate;
     }
 
     /**
      * 设置收到短信时间
      *
-     * @param reciveDate 收到短信时间
+     * @param receiveDate 收到短信时间
      */
-    public void setReciveDate(Date reciveDate) {
-        this.reciveDate = reciveDate;
+    public void setReceiveDate(Date receiveDate) {
+        this.receiveDate = receiveDate;
     }
 
     /**
@@ -307,7 +307,7 @@ public class Message {
         sb.append(", validateStatus=").append(validateStatus);
         sb.append(", failCode=").append(failCode);
         sb.append(", bizId=").append(bizId);
-        sb.append(", reciveDate=").append(reciveDate);
+        sb.append(", receiveDate=").append(receiveDate);
         sb.append(", createDate=").append(createDate);
         sb.append(", updateDate=").append(updateDate);
         sb.append("]");
@@ -335,7 +335,7 @@ public class Message {
             && (this.getValidateStatus() == null ? other.getValidateStatus() == null : this.getValidateStatus().equals(other.getValidateStatus()))
             && (this.getFailCode() == null ? other.getFailCode() == null : this.getFailCode().equals(other.getFailCode()))
             && (this.getBizId() == null ? other.getBizId() == null : this.getBizId().equals(other.getBizId()))
-            && (this.getReciveDate() == null ? other.getReciveDate() == null : this.getReciveDate().equals(other.getReciveDate()))
+            && (this.getReceiveDate() == null ? other.getReceiveDate() == null : this.getReceiveDate().equals(other.getReceiveDate()))
             && (this.getCreateDate() == null ? other.getCreateDate() == null : this.getCreateDate().equals(other.getCreateDate()))
             && (this.getUpdateDate() == null ? other.getUpdateDate() == null : this.getUpdateDate().equals(other.getUpdateDate()));
     }
@@ -353,7 +353,7 @@ public class Message {
         result = prime * result + ((getValidateStatus() == null) ? 0 : getValidateStatus().hashCode());
         result = prime * result + ((getFailCode() == null) ? 0 : getFailCode().hashCode());
         result = prime * result + ((getBizId() == null) ? 0 : getBizId().hashCode());
-        result = prime * result + ((getReciveDate() == null) ? 0 : getReciveDate().hashCode());
+        result = prime * result + ((getReceiveDate() == null) ? 0 : getReceiveDate().hashCode());
         result = prime * result + ((getCreateDate() == null) ? 0 : getCreateDate().hashCode());
         result = prime * result + ((getUpdateDate() == null) ? 0 : getUpdateDate().hashCode());
         return result;
