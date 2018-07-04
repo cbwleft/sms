@@ -50,13 +50,9 @@ public class SMSHealthIndicator implements HealthIndicator {
 			int index = (int) (count++ % samples.length);
 			samples[index] = true;
 		} else if (message.getSendStatus() == Columns.SendStatus.FAILURE) {
-			if ("isv.BUSINESS_LIMIT_CONTROL".equals(message.getFailCode())) {
-				return;// 流控不作为统计样本
-			} else {
-				lastFailCode = message.getFailCode();
-				int index = (int) (count++ % samples.length);
-				samples[index] = false;
-			}
+			lastFailCode = message.getFailCode();
+			int index = (int) (count++ % samples.length);
+			samples[index] = false;
 		}
 	}
 

@@ -3,6 +3,7 @@ package com.cbwleft.sms.service;
 import com.cbwleft.sms.dao.model.App;
 import com.cbwleft.sms.dao.model.Message;
 import com.cbwleft.sms.dao.model.Template;
+import com.cbwleft.sms.exception.ChannelException;
 import com.cbwleft.sms.model.dto.BatchMessageDTO;
 import com.cbwleft.sms.model.dto.MessageDTO;
 import com.cbwleft.sms.model.dto.QuerySendResult;
@@ -17,7 +18,7 @@ public interface IChannelSMSService {
 	 * @param message
 	 * @return
 	 */
-	SendMessageResult send(App app, Template template, MessageDTO message);
+	SendMessageResult send(App app, Template template, MessageDTO message) throws ChannelException;
 
 	/**
 	 * 查询发送状态

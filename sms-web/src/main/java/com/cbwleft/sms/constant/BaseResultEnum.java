@@ -14,6 +14,7 @@ public enum BaseResultEnum {
 	NOT_VALIDATE_CODE_TEMPLATE(false, -1001),
 	VALIDATE_CODE_EXPIRE_ILLEGAL(false, -1002),
 	APP_NOT_EXIST(false, -1100),
+	SEND_TOO_FREQUENTLY(false, -2000),
 	SERVER_ERROR(false, -9999);
 
 	boolean success;
@@ -28,16 +29,8 @@ public enum BaseResultEnum {
 		return success;
 	}
 
-	public void setSuccess(boolean success) {
-		this.success = success;
-	}
-
 	public int getCode() {
 		return code;
 	}
 
-	public void setCode(int code) {
-		this.code = code;
-	}
-	
 }

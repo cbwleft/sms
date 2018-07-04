@@ -7,6 +7,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.aliyuncs.exceptions.ClientException;
+import com.cbwleft.sms.constant.BaseResultEnum;
+import com.cbwleft.sms.exception.BaseException;
+import com.cbwleft.sms.exception.ChannelException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,33 +42,47 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Profile(ConfigConstants.ALI_SMS)
 public class AliSMSServiceImpl implements IChannelSMSService {
 
+
+	private static final String SUCCESS = "OK";
+
+	private static final String LIMIT_CONTROL = "isv.BUSINESS_LIMIT_CONTROL";
+
+	private static final String OUT_OF_SERVICE = "isv.OUT_OF_SERVICE";
+
 	private static final Logger logger = LoggerFactory.getLogger(AliSMSServiceImpl.class);
 
 	@Autowired
 	private IAcsClient acsClient;
 
 	@Override
-	public SendMessageResult send(App app, Template template, MessageDTO message) {
+	public SendMessageResult send(App app, Template template, MessageDTO message) throws ChannelException {
+		SendSmsRequest request = new SendSmsRequest();
+		request.setMethod(MethodType.POST);
+		request.setPhoneNumbers(message.getMobile());
+		request.setSignName(app.getPrefix());
+		request.setTemplateCode(template.getChannelTemplateNo());
+		Map<String, Object> params = message.getParams();
 		try {
-			SendSmsRequest request = new SendSmsRequest();
-			request.setMethod(MethodType.POST);
-			request.setPhoneNumbers(message.getMobile());
-			request.setSignName(app.getPrefix());
-			request.setTemplateCode(template.getChannelTemplateNo());
-			Map<String, Object> params = message.getParams();
 			request.setTemplateParam(new ObjectMapper().writeValueAsString(params));
-			SendSmsResponse sendSmsResponse;
+		} catch (JsonProcessingException e) {
+			throw new RuntimeException(e);
+		}
+		SendSmsResponse sendSmsResponse;
+		try {
 			sendSmsResponse = acsClient.getAcsResponse(request);
-			if ("OK".equals(sendSmsResponse.getCode())) {
-				return new SendMessageResult(true, sendSmsResponse.getBizId());
-			} else {
-				logger.warn("阿里云通讯短信发送失败,原因:{},错误代码:{},请求Id:{}", sendSmsResponse.getMessage(), sendSmsResponse.getCode(),
-						sendSmsResponse.getRequestId());
-				return new SendMessageResult(sendSmsResponse.getCode(), sendSmsResponse.getBizId());
-			}
-		} catch (Exception e) {
-			logger.error("阿里云通讯短信接口异常", e);
-			return new SendMessageResult(e.getMessage(), null);
+		} catch (ClientException e) {
+			throw new ChannelException(e);
+		}
+		if (SUCCESS.equals(sendSmsResponse.getCode())) {
+			return new SendMessageResult(true, sendSmsResponse.getBizId());
+		} else if (LIMIT_CONTROL.equals(sendSmsResponse.getCode())) {
+			throw new BaseException(BaseResultEnum.SEND_TOO_FREQUENTLY, "短信发送过于频繁," + sendSmsResponse.getMessage());
+		} else if (OUT_OF_SERVICE.equals(sendSmsResponse.getCode())) {
+			throw new ChannelException(OUT_OF_SERVICE);
+		} else {
+			logger.warn("阿里云通讯短信发送失败,原因:{},错误代码:{},请求Id:{}", sendSmsResponse.getMessage(), sendSmsResponse.getCode(),
+					sendSmsResponse.getRequestId());
+			return new SendMessageResult(sendSmsResponse.getCode(), sendSmsResponse.getBizId());
 		}
 	}
 
@@ -98,17 +117,17 @@ public class AliSMSServiceImpl implements IChannelSMSService {
 				logger.info("阿里云通讯短信查询结果为:{}", new ObjectMapper().writeValueAsString(smsSendDetailDTO));
 				int aliSendStatus = smsSendDetailDTO.getSendStatus().intValue();// 1：等待回执，2：发送失败，3：发送成功
 				byte sendStatus = Columns.SendStatus.SENDING;
-				Date reciveDate = null;
+				Date receiveDate = null;
 				String failCode = null;
 				if (aliSendStatus == 2) {
 					sendStatus = Columns.SendStatus.FAILURE;
 					failCode = smsSendDetailDTO.getErrCode();
 				} else if (aliSendStatus == 3) {
-					reciveDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")// 2017-05-25 00:00:00
+					receiveDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")// 2017-05-25 00:00:00
 							.parse(smsSendDetailDTO.getReceiveDate());
 					sendStatus = Columns.SendStatus.SUCCESS;
 				}
-				return new QuerySendResult(true, sendStatus, smsSendDetailDTO.getContent(), reciveDate,
+				return new QuerySendResult(true, sendStatus, smsSendDetailDTO.getContent(), receiveDate,
 						failCode);
 			} else {
 				return new QuerySendResult(false);

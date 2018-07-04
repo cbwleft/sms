@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.cbwleft.sms.exception.ChannelException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +60,7 @@ public class LinkSMSServiceImpl implements IBatchQueryable {
 	private StringRedisTemplate stringRedisTemplate;
 
 	@Override
-	public SendMessageResult send(App app, Template template, MessageDTO message) {
+	public SendMessageResult send(App app, Template template, MessageDTO message) throws ChannelException {
 		try {
 			String content = renderString(template.getTemplate(), message.getParams());
 			content += "【" + app.getPrefix() + "】";
@@ -79,10 +80,8 @@ public class LinkSMSServiceImpl implements IBatchQueryable {
 				return new SendMessageResult(body, null);
 			}
 		} catch (Exception e) {
-			logger.error("凌凯短信接口异常", e);
-			return new SendMessageResult(e.getMessage(), null);
+			throw new ChannelException(e);
 		}
-
 	}
 
 	private String renderString(String content, Map<String, Object> map) {

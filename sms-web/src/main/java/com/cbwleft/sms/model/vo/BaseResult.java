@@ -1,6 +1,7 @@
 package com.cbwleft.sms.model.vo;
 
 import com.cbwleft.sms.constant.BaseResultEnum;
+import com.cbwleft.sms.exception.BaseException;
 
 public class BaseResult {
 
@@ -15,7 +16,7 @@ public class BaseResult {
 
 	public BaseResult(BaseException e) {
 		this.baseResultEnum = e.getBaseResultEnum();
-		this.msg = e.getMsg();
+		this.msg = e.getMessage();
 	}
 
 	public String getMsg() {

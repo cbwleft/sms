@@ -13,7 +13,7 @@
     <result column="fail_code" jdbcType="VARCHAR" property="failCode" />
     <result column="success" jdbcType="SMALLINT" property="success" />
     <result column="failure" jdbcType="SMALLINT" property="failure" />
-    <result column="appId" jdbcType="TINYINT" property="appid" />
+    <result column="app_id" jdbcType="TINYINT" property="appId" />
     <result column="create_date" jdbcType="TIMESTAMP" property="createDate" />
     <result column="update_date" jdbcType="TIMESTAMP" property="updateDate" />
   </resultMap>

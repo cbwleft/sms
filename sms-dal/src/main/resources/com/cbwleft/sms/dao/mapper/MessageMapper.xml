@@ -14,7 +14,7 @@
     <result column="validate_status" jdbcType="TINYINT" property="validateStatus" />
     <result column="fail_code" jdbcType="VARCHAR" property="failCode" />
     <result column="biz_id" jdbcType="VARCHAR" property="bizId" />
-    <result column="recive_date" jdbcType="TIMESTAMP" property="reciveDate" />
+    <result column="receive_date" jdbcType="TIMESTAMP" property="receiveDate" />
     <result column="create_date" jdbcType="TIMESTAMP" property="createDate" />
     <result column="update_date" jdbcType="TIMESTAMP" property="updateDate" />
   </resultMap>

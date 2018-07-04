@@ -83,3 +83,8 @@ MODIFY COLUMN `fail_code`  varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_ge
 
 ALTER TABLE `t_batch_message`
 MODIFY COLUMN `fail_code`  varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '短信平台发送失败代码' AFTER `biz_id`;
+
+-- V1.2.0新增
+alter table t_batch_message change appId app_id tinyint not null COMMENT '应用id';
+alter table t_message change recive_date receive_date timestamp null comment '收到短信时间';
+

@@ -9,6 +9,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.cbwleft.sms.exception.ChannelException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,7 @@ import com.cbwleft.sms.model.dto.MessageDTO;
 import com.cbwleft.sms.model.dto.QuerySendResult;
 import com.cbwleft.sms.model.dto.SendMessageResult;
 import com.cbwleft.sms.model.dto.ValidateCodeDTO;
-import com.cbwleft.sms.model.vo.BaseException;
+import com.cbwleft.sms.exception.BaseException;
 import com.cbwleft.sms.service.IChannelSMSService;
 import com.cbwleft.sms.service.IMessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -105,7 +106,13 @@ public class MessageServiceImpl implements IMessageService {
 		}
 		
 		logger.info("开始发送短信:{}", template);
-		SendMessageResult result = channelSMSService.send(app, template, messageDTO);
+		SendMessageResult result;
+		try {
+			result = channelSMSService.send(app, template, messageDTO);
+		} catch (ChannelException e) {
+			logger.error("渠道短信发送异常", e);
+			result = new SendMessageResult(false, e.getMessage());
+		}
 		try {
 			Message message = new Message();
 			message.setMobile(messageDTO.getMobile());
@@ -243,7 +250,7 @@ public class MessageServiceImpl implements IMessageService {
 		if (Columns.SendStatus.FAILURE == querySendResult.getSendStatus()) {
 			updateMessage.setFailCode(querySendResult.getFailCode());
 		} else if(Columns.SendStatus.SUCCESS == querySendResult.getSendStatus()) {
-			updateMessage.setReciveDate(querySendResult.getReceiveDate());
+			updateMessage.setReceiveDate(querySendResult.getReceiveDate());
 		}
 		int result = messageMapper.updateByPrimaryKeySelective(updateMessage);
 		logger.info("{}更新发送状态结果{}", updateMessage, result);
@@ -274,7 +281,7 @@ public class MessageServiceImpl implements IMessageService {
 		SendMessageResult sendMessageResult = channelSMSService.batchSend(app, batchMessageDTO);
 		try {
 			BatchMessage batchMessage = new BatchMessage();
-			batchMessage.setAppid(app.getId());
+			batchMessage.setAppId(app.getId());
 			batchMessage.setContent(batchMessageDTO.getContent());
 			batchMessage.setTotal((short) mobile.size());
 

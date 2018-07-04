@@ -3,3 +3,5 @@
 *.prefs
 *.DS_Store
 /.idea/
+rebel.xml
+*.iml

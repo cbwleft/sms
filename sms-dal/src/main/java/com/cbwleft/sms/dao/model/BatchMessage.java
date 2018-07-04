@@ -50,8 +50,11 @@ public class BatchMessage {
      */
     private Short failure;
 
-    @Column(name = "appId")
-    private Byte appid;
+    /**
+     * 应用id
+     */
+    @Column(name = "app_id")
+    private Byte appId;
 
     /**
      * 创建时间
@@ -210,17 +213,21 @@ public class BatchMessage {
     }
 
     /**
-     * @return appId
+     * 获取应用id
+     *
+     * @return app_id - 应用id
      */
-    public Byte getAppid() {
-        return appid;
+    public Byte getAppId() {
+        return appId;
     }
 
     /**
-     * @param appid
+     * 设置应用id
+     *
+     * @param appId 应用id
      */
-    public void setAppid(Byte appid) {
-        this.appid = appid;
+    public void setAppId(Byte appId) {
+        this.appId = appId;
     }
 
     /**
@@ -273,7 +280,7 @@ public class BatchMessage {
         sb.append(", failCode=").append(failCode);
         sb.append(", success=").append(success);
         sb.append(", failure=").append(failure);
-        sb.append(", appid=").append(appid);
+        sb.append(", appId=").append(appId);
         sb.append(", createDate=").append(createDate);
         sb.append(", updateDate=").append(updateDate);
         sb.append("]");
@@ -300,7 +307,7 @@ public class BatchMessage {
             && (this.getFailCode() == null ? other.getFailCode() == null : this.getFailCode().equals(other.getFailCode()))
             && (this.getSuccess() == null ? other.getSuccess() == null : this.getSuccess().equals(other.getSuccess()))
             && (this.getFailure() == null ? other.getFailure() == null : this.getFailure().equals(other.getFailure()))
-            && (this.getAppid() == null ? other.getAppid() == null : this.getAppid().equals(other.getAppid()))
+            && (this.getAppId() == null ? other.getAppId() == null : this.getAppId().equals(other.getAppId()))
             && (this.getCreateDate() == null ? other.getCreateDate() == null : this.getCreateDate().equals(other.getCreateDate()))
             && (this.getUpdateDate() == null ? other.getUpdateDate() == null : this.getUpdateDate().equals(other.getUpdateDate()));
     }
@@ -317,7 +324,7 @@ public class BatchMessage {
         result = prime * result + ((getFailCode() == null) ? 0 : getFailCode().hashCode());
         result = prime * result + ((getSuccess() == null) ? 0 : getSuccess().hashCode());
         result = prime * result + ((getFailure() == null) ? 0 : getFailure().hashCode());
-        result = prime * result + ((getAppid() == null) ? 0 : getAppid().hashCode());
+        result = prime * result + ((getAppId() == null) ? 0 : getAppId().hashCode());
         result = prime * result + ((getCreateDate() == null) ? 0 : getCreateDate().hashCode());
         result = prime * result + ((getUpdateDate() == null) ? 0 : getUpdateDate().hashCode());
         return result;

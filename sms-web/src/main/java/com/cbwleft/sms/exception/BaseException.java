@@ -1,4 +1,4 @@
-package com.cbwleft.sms.model.vo;
+package com.cbwleft.sms.exception;
 
 import com.cbwleft.sms.constant.BaseResultEnum;
 
@@ -8,26 +8,23 @@ public class BaseException extends RuntimeException{
 
 	private BaseResultEnum baseResultEnum;
 	
-	private String msg;
+	private String message;
 
 	public BaseException(BaseResultEnum baseResultEnum) {
 		this.baseResultEnum = baseResultEnum;
+	}
+
+	public BaseException(BaseResultEnum baseResultEnum, String message) {
+		this.baseResultEnum = baseResultEnum;
+		this.message = message;
 	}
 
 	public BaseResultEnum getBaseResultEnum() {
 		return baseResultEnum;
 	}
 
-	public void setBaseResultEnum(BaseResultEnum baseResultEnum) {
-		this.baseResultEnum = baseResultEnum;
+	public String getMessage() {
+		return message;
 	}
 
-	public String getMsg() {
-		return msg;
-	}
-
-	public void setMsg(String msg) {
-		this.msg = msg;
-	}
-	
 }

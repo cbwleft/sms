@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.cbwleft.sms.constant.BaseResultEnum;
-import com.cbwleft.sms.model.vo.BaseException;
+import com.cbwleft.sms.exception.BaseException;
 import com.cbwleft.sms.model.vo.BaseResult;
 
 public class BaseController {
@@ -14,7 +14,7 @@ public class BaseController {
 
 	@ExceptionHandler({ BaseException.class })
 	public BaseResult exception(BaseException e) {
-		logger.info("业务异常:{},msg:{}", e.getBaseResultEnum(), e.getMessage());
+		logger.info("业务异常:{},message:{}", e.getBaseResultEnum(), e.getMessage());
 		return new BaseResult(e);
 	}
 	
