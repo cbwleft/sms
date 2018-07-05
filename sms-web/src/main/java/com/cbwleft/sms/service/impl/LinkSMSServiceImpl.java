@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.cbwleft.sms.exception.AmountNotEnoughException;
 import com.cbwleft.sms.exception.ChannelException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,8 @@ public class LinkSMSServiceImpl implements IBatchQueryable {
 
 	private static final String REPORT_STATUS_FAILURE = "2";
 
+	public static final int AMOUNT_NOT_ENOUGH = -5;
+
 	@Autowired
 	private LinkSMSConfig linkSMSConfig;
 
@@ -61,26 +64,34 @@ public class LinkSMSServiceImpl implements IBatchQueryable {
 
 	@Override
 	public SendMessageResult send(App app, Template template, MessageDTO message) throws ChannelException {
+		String content = renderString(template.getTemplate(), message.getParams());
+		content += "【" + app.getPrefix() + "】";
+		MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
+		params.add("CorpID", linkSMSConfig.getCorpId());
+		params.add("Pwd", linkSMSConfig.getPassword());
+		params.add("Mobile", message.getMobile());
+		params.add("Content", content);
+		String body;
 		try {
-			String content = renderString(template.getTemplate(), message.getParams());
-			content += "【" + app.getPrefix() + "】";
-			MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
-			params.add("CorpID", linkSMSConfig.getCorpId());
-			params.add("Pwd", linkSMSConfig.getPassword());
-			params.add("Mobile", message.getMobile());
-			params.add("Content", content);
 			ResponseEntity<String> result = restTemplate.postForEntity("/BatchSend2.aspx", params, String.class);
-			String body = result.getBody();
+			body = result.getBody();
 			logger.info("凌凯短信发送接口返回{}", body);
-			int intBody = Integer.parseInt(body);
-			if (intBody > 0) {
-				return new SendMessageResult(true, body);
-			} else {
-				logger.warn("凌凯短信发送失败,错误代码:{}", body);
-				return new SendMessageResult(body, null);
-			}
 		} catch (Exception e) {
 			throw new ChannelException(e);
+		}
+		int intBody = Integer.parseInt(body);
+		checkChannelException(intBody);
+		if (intBody > 0) {
+			return new SendMessageResult(true, body);
+		} else {
+			logger.warn("凌凯短信发送失败,错误代码:{}", body);
+			return new SendMessageResult(body);
+		}
+	}
+
+	private void checkChannelException(int intBody) throws ChannelException {
+		 if (intBody == AMOUNT_NOT_ENOUGH) {
+		 	throw new AmountNotEnoughException();
 		}
 	}
 
@@ -191,11 +202,11 @@ public class LinkSMSServiceImpl implements IBatchQueryable {
 				return new SendMessageResult(true, body);
 			} else {
 				logger.warn("凌凯短信发送失败,错误代码:{}", body);
-				return new SendMessageResult(body, null);
+				return new SendMessageResult(body);
 			}
 		} catch (Exception e) {
 			logger.error("凌凯短信接口异常", e);
-			return new SendMessageResult(e.getMessage(), null);
+			return new SendMessageResult(e.getMessage());
 		}
 	}
 

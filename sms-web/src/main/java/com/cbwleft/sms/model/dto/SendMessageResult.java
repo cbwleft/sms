@@ -13,10 +13,9 @@ public class SendMessageResult {
 		this.bizId = bizId;
 	}
 	
-	public SendMessageResult(String failCode, String bizId) {
+	public SendMessageResult(String failCode) {
 		this.success = false;
 		this.failCode = failCode;
-		this.bizId = bizId;
 	}
 
 	public boolean isSuccess() {

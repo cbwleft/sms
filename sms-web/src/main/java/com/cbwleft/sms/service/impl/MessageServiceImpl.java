@@ -111,7 +111,7 @@ public class MessageServiceImpl implements IMessageService {
 			result = channelSMSService.send(app, template, messageDTO);
 		} catch (ChannelException e) {
 			logger.error("渠道短信发送异常", e);
-			result = new SendMessageResult(false, e.getMessage());
+			result = new SendMessageResult(e.getMessage());
 		}
 		try {
 			Message message = new Message();

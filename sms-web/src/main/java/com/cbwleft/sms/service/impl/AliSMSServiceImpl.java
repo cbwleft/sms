@@ -9,6 +9,7 @@ import java.util.Map;
 
 import com.aliyuncs.exceptions.ClientException;
 import com.cbwleft.sms.constant.BaseResultEnum;
+import com.cbwleft.sms.exception.AmountNotEnoughException;
 import com.cbwleft.sms.exception.BaseException;
 import com.cbwleft.sms.exception.ChannelException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -49,6 +50,8 @@ public class AliSMSServiceImpl implements IChannelSMSService {
 
 	private static final String OUT_OF_SERVICE = "isv.OUT_OF_SERVICE";
 
+	private static final String AMOUNT_NOT_ENOUGH = "isv.AMOUNT_NOT_ENOUGH";
+
 	private static final Logger logger = LoggerFactory.getLogger(AliSMSServiceImpl.class);
 
 	@Autowired
@@ -73,16 +76,22 @@ public class AliSMSServiceImpl implements IChannelSMSService {
 		} catch (ClientException e) {
 			throw new ChannelException(e);
 		}
+		checkChannelException(sendSmsResponse);
 		if (SUCCESS.equals(sendSmsResponse.getCode())) {
 			return new SendMessageResult(true, sendSmsResponse.getBizId());
-		} else if (LIMIT_CONTROL.equals(sendSmsResponse.getCode())) {
-			throw new BaseException(BaseResultEnum.SEND_TOO_FREQUENTLY, "短信发送过于频繁," + sendSmsResponse.getMessage());
-		} else if (OUT_OF_SERVICE.equals(sendSmsResponse.getCode())) {
-			throw new ChannelException(OUT_OF_SERVICE);
 		} else {
 			logger.warn("阿里云通讯短信发送失败,原因:{},错误代码:{},请求Id:{}", sendSmsResponse.getMessage(), sendSmsResponse.getCode(),
 					sendSmsResponse.getRequestId());
-			return new SendMessageResult(sendSmsResponse.getCode(), sendSmsResponse.getBizId());
+			return new SendMessageResult(sendSmsResponse.getCode());
+		}
+	}
+
+	private void checkChannelException(SendSmsResponse sendSmsResponse) throws ChannelException {
+		String code = sendSmsResponse.getCode();
+		if (LIMIT_CONTROL.equals(code)) {
+			throw new BaseException(BaseResultEnum.SEND_TOO_FREQUENTLY, "短信发送过于频繁," + sendSmsResponse.getMessage());
+		} else if (OUT_OF_SERVICE.equals(code) || AMOUNT_NOT_ENOUGH.equals(code)) {
+			throw new AmountNotEnoughException();
 		}
 	}
 
