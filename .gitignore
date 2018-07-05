@@ -1,7 +1,14 @@
-/.project/
-*.project
-*.prefs
-*.DS_Store
-/.idea/
-rebel.xml
+# Maven #
+target/
+
+# IDEA #
+.idea/
 *.iml
+
+# Eclipse #
+.settings/
+.classpath
+.project
+
+# JRebel #
+rebel.xml
