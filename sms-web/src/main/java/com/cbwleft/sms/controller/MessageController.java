@@ -76,12 +76,8 @@ public class MessageController extends BaseController {
 		if (bindingResult.hasErrors()) {
 			return new BaseResult(BaseResultEnum.ILLEGAL_ARGUMENT, bindingResult.getFieldError().getDefaultMessage());
 		}
-		SendMessageResult result = messageService.batchSend(batchMessage);
-		if (result.isSuccess()) {
-			return new BaseResult(BaseResultEnum.SUCCESS, "发送成功");
-		} else {
-			return new BaseResult(BaseResultEnum.FAIL, result.getFailCode());
-		}
+		messageService.batchSend(batchMessage);
+		return new BaseResult(BaseResultEnum.SUCCESS, "发送成功");
 	}
 
 }

@@ -85,7 +85,7 @@ public interface IMessageService {
 	 * @param batchMessage
 	 * @return
 	 */
-	SendMessageResult batchSend(BatchMessageDTO batchMessage);
+	void batchSend(BatchMessageDTO batchMessage);
 
 	/**
 	 * 查询批量短信

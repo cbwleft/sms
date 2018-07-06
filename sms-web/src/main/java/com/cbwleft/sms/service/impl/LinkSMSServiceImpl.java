@@ -31,7 +31,6 @@ import com.cbwleft.sms.dao.model.App;
 import com.cbwleft.sms.dao.model.BatchMessage;
 import com.cbwleft.sms.dao.model.Message;
 import com.cbwleft.sms.dao.model.Template;
-import com.cbwleft.sms.model.dto.BatchMessageDTO;
 import com.cbwleft.sms.model.dto.MessageDTO;
 import com.cbwleft.sms.model.dto.QuerySendResult;
 import com.cbwleft.sms.model.dto.SendMessageResult;
@@ -185,14 +184,13 @@ public class LinkSMSServiceImpl implements IBatchQueryable {
 	}
 
 	@Override
-	public SendMessageResult batchSend(App app, BatchMessageDTO batchMessage) {
+	public SendMessageResult batchSend(App app, String[] mobile, String content) throws ChannelException {
 		try {
-			String content = batchMessage.getContent();
 			content += "【" + app.getPrefix() + "】";
 			MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
 			params.add("CorpID", linkSMSConfig.getCorpId());
 			params.add("Pwd", linkSMSConfig.getPassword());
-			params.add("Mobile", String.join(",", batchMessage.getMobile()));
+			params.add("Mobile", String.join(",", mobile));
 			params.add("Content", content);
 			ResponseEntity<String> result = restTemplate.postForEntity("/BatchSend2.aspx", params, String.class);
 			String body = result.getBody();
@@ -205,8 +203,7 @@ public class LinkSMSServiceImpl implements IBatchQueryable {
 				return new SendMessageResult(body);
 			}
 		} catch (Exception e) {
-			logger.error("凌凯短信接口异常", e);
-			return new SendMessageResult(e.getMessage());
+			throw new ChannelException(e);
 		}
 	}
 

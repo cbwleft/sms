@@ -5,10 +5,11 @@ target/
 .idea/
 *.iml
 
-# Eclipse #
+# STS #
 .settings/
 .classpath
 .project
+.factorypath
 
 # JRebel #
 rebel.xml

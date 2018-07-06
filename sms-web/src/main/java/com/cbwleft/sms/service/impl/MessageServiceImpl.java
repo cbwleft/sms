@@ -1,12 +1,7 @@
 package com.cbwleft.sms.service.impl;
 
 import java.time.Instant;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import com.cbwleft.sms.exception.ChannelException;
@@ -72,6 +67,8 @@ public class MessageServiceImpl implements IMessageService {
 	
 	@Autowired
 	private RedisTemplate<String, Object> redisTemplate;
+	
+	private static final int BATCH_MESSAGE_COUNT = 500;
 
 	@Override
 	public SendMessageResult send(MessageDTO messageDTO) {
@@ -271,45 +268,55 @@ public class MessageServiceImpl implements IMessageService {
 	}
 
 	@Override
-	public SendMessageResult batchSend(BatchMessageDTO batchMessageDTO) {
+	public void batchSend(BatchMessageDTO batchMessageDTO) {
 		App app = appMapper.selectByPrimaryKey(batchMessageDTO.getAppId());
 		if (app == null) {
 			throw new BaseException(BaseResultEnum.APP_NOT_EXIST);
 		}
 		Set<String> mobile = batchMessageDTO.getMobile();
 		logger.info("开始批量发送短信:{}", batchMessageDTO.getContent());
-		SendMessageResult sendMessageResult = channelSMSService.batchSend(app, batchMessageDTO);
-		try {
-			BatchMessage batchMessage = new BatchMessage();
-			batchMessage.setAppId(app.getId());
-			batchMessage.setContent(batchMessageDTO.getContent());
-			batchMessage.setTotal((short) mobile.size());
-
-			if (sendMessageResult.isSuccess()) {
-				batchMessage.setSendStatus(Columns.SendStatus.SENDING);
-			} else {
-				batchMessage.setSendStatus(Columns.SendStatus.FAILURE);
-				batchMessage.setFailCode(sendMessageResult.getFailCode());
-				batchMessage.setFailure(batchMessage.getTotal());
+		List<String> mobileList = new ArrayList<>(mobile);
+		int from = 0, to = 0;
+		while (to < mobileList.size()) {
+			to = to + BATCH_MESSAGE_COUNT > mobileList.size() ? mobileList.size() : to + BATCH_MESSAGE_COUNT;
+			String [] mobileArray = mobileList.subList(from, to).toArray(new String[0]);
+			from = to;
+			SendMessageResult sendMessageResult;
+			try {
+				sendMessageResult = channelSMSService.batchSend(app, mobileArray, batchMessageDTO.getContent());
+			} catch (ChannelException e) {
+				sendMessageResult = new SendMessageResult(e.getMessage());
 			}
-			batchMessage.setBizId(sendMessageResult.getBizId());
-			Date now = new Date();
-			batchMessage.setCreateDate(now);
-			batchMessage.setUpdateDate(now);
-			int rows = batchMessageMapper.insertSelective(batchMessage);
-			logger.info("{}插入结果:{},生成的自增id为:{}", batchMessage, rows, batchMessage.getId());
-			String redisKey;
-			if (sendMessageResult.isSuccess()) {
-				redisKey = RedisKeys.BATCH_MESSAGE_SENDING.format(batchMessage.getId());
-			} else {
-				redisKey = RedisKeys.BATCH_MESSAGE_FAILURE.format(batchMessage.getId());
+			try {
+				BatchMessage batchMessage = new BatchMessage();
+				batchMessage.setAppId(app.getId());
+				batchMessage.setContent(batchMessageDTO.getContent());
+				batchMessage.setTotal((short) mobileArray.length);
+				if (sendMessageResult.isSuccess()) {
+					batchMessage.setSendStatus(Columns.SendStatus.SENDING);
+				} else {
+					batchMessage.setSendStatus(Columns.SendStatus.FAILURE);
+					batchMessage.setFailCode(sendMessageResult.getFailCode());
+					batchMessage.setFailure(batchMessage.getTotal());
+				}
+				batchMessage.setBizId(sendMessageResult.getBizId());
+				Date now = new Date();
+				batchMessage.setCreateDate(now);
+				batchMessage.setUpdateDate(now);
+				int rows = batchMessageMapper.insertSelective(batchMessage);
+				logger.info("{}插入结果:{},生成的自增id为:{}", batchMessage, rows, batchMessage.getId());
+				String redisKey;
+				if (sendMessageResult.isSuccess()) {
+					redisKey = RedisKeys.BATCH_MESSAGE_SENDING.format(batchMessage.getId());
+				} else {
+					redisKey = RedisKeys.BATCH_MESSAGE_FAILURE.format(batchMessage.getId());
+				}
+				long add = stringRedisTemplate.opsForSet().add(redisKey, mobileArray);
+				logger.info("{}集合新增:{}", redisKey, add) ;
+			} catch (Exception e) {
+				logger.error("插入BatchMessage数据异常" + batchMessageDTO, e);
 			}
-			long add = stringRedisTemplate.opsForSet().add(redisKey, mobile.toArray(new String[0]));
-			logger.info("{}集合新增:{}", redisKey, add) ;
-		} catch (Exception e) {
-			logger.error("插入BatchMessage数据异常" + batchMessageDTO, e);
 		}
-		return sendMessageResult;
 	}
 	
 	@Override

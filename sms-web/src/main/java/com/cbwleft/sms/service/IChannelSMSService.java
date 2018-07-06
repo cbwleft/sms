@@ -4,7 +4,6 @@ import com.cbwleft.sms.dao.model.App;
 import com.cbwleft.sms.dao.model.Message;
 import com.cbwleft.sms.dao.model.Template;
 import com.cbwleft.sms.exception.ChannelException;
-import com.cbwleft.sms.model.dto.BatchMessageDTO;
 import com.cbwleft.sms.model.dto.MessageDTO;
 import com.cbwleft.sms.model.dto.QuerySendResult;
 import com.cbwleft.sms.model.dto.SendMessageResult;
@@ -31,9 +30,10 @@ public interface IChannelSMSService {
 	/**
 	 * 调用具体的短信平台批量发送短信
 	 * @param app
-	 * @param batchMessage
+	 * @param mobile
+	 * @param content
 	 * @return
 	 */
-	SendMessageResult batchSend(App app, BatchMessageDTO batchMessage);
+	SendMessageResult batchSend(App app, String[] mobile, String content) throws ChannelException;
 
 }

@@ -32,7 +32,6 @@ import com.cbwleft.sms.dao.constant.Columns;
 import com.cbwleft.sms.dao.model.App;
 import com.cbwleft.sms.dao.model.Message;
 import com.cbwleft.sms.dao.model.Template;
-import com.cbwleft.sms.model.dto.BatchMessageDTO;
 import com.cbwleft.sms.model.dto.MessageDTO;
 import com.cbwleft.sms.model.dto.QuerySendResult;
 import com.cbwleft.sms.model.dto.SendMessageResult;
@@ -116,7 +115,7 @@ public class AliSMSServiceImpl implements IChannelSMSService {
 				List<SmsSendDetailDTO> list = querySendDetailsResponse.getSmsSendDetailDTOs();
 				if (CollectionUtils.isEmpty(list)) {
 					if (Duration.between(message.getCreateDate().toInstant(), Instant.now()).toMinutes() > 5) {
-						return new QuerySendResult(true, Columns.SendStatus.FAILURE, null, null, "no match send record");
+						return new QuerySendResult(true, Columns.SendStatus.FAILURE, null, null, "noMatchSendRecord");
 					} else {
 						logger.info("未查询到对应的短信记录,可能是因为阿里读写库同步延迟");
 						return new QuerySendResult(false);
@@ -148,7 +147,7 @@ public class AliSMSServiceImpl implements IChannelSMSService {
 	}
 
 	@Override
-	public SendMessageResult batchSend(App app, BatchMessageDTO batchMessage) {
+	public SendMessageResult batchSend(App app, String[] mobile, String content) {
 		throw new UnsupportedOperationException();
 	}
 
