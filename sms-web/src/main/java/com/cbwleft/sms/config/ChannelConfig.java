@@ -11,8 +11,6 @@ public class ChannelConfig {
 
 	private List<String> available;
 
-	private int retry;
-
 	private String batchSend;
 
 	public void setAvailable(List<String> available) {
@@ -21,14 +19,6 @@ public class ChannelConfig {
 
 	public List<String> getAvailable() {
 		return available;
-	}
-
-	public int getRetry() {
-		return retry;
-	}
-
-	public void setRetry(int retry) {
-		this.retry = retry;
 	}
 
 	public String getBatchSend() {
