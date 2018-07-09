@@ -5,6 +5,9 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
+/**
+ * 短信渠道配置
+ */
 @Configuration
 @ConfigurationProperties(prefix="sms.channel")
 public class ChannelConfig {

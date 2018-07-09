@@ -108,7 +108,7 @@ public class AliSMSServiceImpl implements IChannelSMSService {
 			// hint 此处可能会抛出异常，注意catch
 			QuerySendDetailsResponse querySendDetailsResponse = acsClient.getAcsResponse(request);
 			// 获取返回结果
-			if ("OK".equals(querySendDetailsResponse.getCode())) {
+			if (SUCCESS.equals(querySendDetailsResponse.getCode())) {
 				List<SmsSendDetailDTO> list = querySendDetailsResponse.getSmsSendDetailDTOs();
 				if (CollectionUtils.isEmpty(list)) {
 					if (Duration.between(message.getCreateDate().toInstant(), Instant.now()).toMinutes() > 5) {

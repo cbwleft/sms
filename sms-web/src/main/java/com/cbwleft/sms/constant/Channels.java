@@ -1,7 +1,7 @@
 package com.cbwleft.sms.constant;
 
 /**
- * 短信渠道文件常量
+ * 短信渠道常量
  * @author cbwleft
  */
 public class Channels {

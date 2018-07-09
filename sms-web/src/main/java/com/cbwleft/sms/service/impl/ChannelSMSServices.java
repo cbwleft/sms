@@ -32,7 +32,7 @@ public class ChannelSMSServices implements Iterable<IChannelSMSService> {
 
 		@Override
 		public boolean hasNext() {
-			return i <= channelConfig.getAvailable().size();
+			return i < channelConfig.getAvailable().size();
 		}
 
 		@Override
