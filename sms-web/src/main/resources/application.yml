@@ -2,10 +2,6 @@ server:
   port: 8000
 
 spring:
-  profiles:
-    include:
-    - aliyun #使用阿里云通讯通道
-    #- link #使用凌凯短信通道
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://aliyun:3306/sms?useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
@@ -37,6 +33,11 @@ sms:
     link:
       corp-id: *** #企业号
       password: *** #密码
+    available:
+    - aliyun #优先使用阿里云
+    - link #备用凌凯短信
+    retry: 1 #失败重试次数，从available中循环
+    batchSend: link #使用凌凯发送批量短信
 
 swagger:
   base-package:

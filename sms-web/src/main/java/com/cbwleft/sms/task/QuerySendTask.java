@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
+import com.cbwleft.sms.service.impl.ChannelSMSServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,17 +26,19 @@ public class QuerySendTask {
 	private IMessageService messageService;
 
 	@Autowired
-	private IChannelSMSService channelSMSService;
+	private ChannelSMSServices channelSMSServices;
 
 	@Scheduled(fixedDelay = 5 * 60 * 1000)
 	public void querySend() {
 		logger.debug("开始查询短信发送结果");
-		if (channelSMSService instanceof IBatchQueryable) {
-			((IBatchQueryable) channelSMSService).batchQueryAndUpdateSendStatus();
-		}else {
-			Date yesterday = Date.from(Instant.now().minus(Duration.ofDays(1)));
-			List<Message> list = messageService.querySendingMessages(yesterday);
-			list.forEach(messageService::queryAndUpdateSendStatus);
+		for (IChannelSMSService channelSMSService : channelSMSServices) {
+			if (channelSMSService instanceof IBatchQueryable) {
+				((IBatchQueryable) channelSMSService).batchQueryAndUpdateSendStatus();
+			}else {
+				Date yesterday = Date.from(Instant.now().minus(Duration.ofDays(1)));
+				List<Message> list = messageService.querySendingMessages(yesterday, channelSMSService.getChannel());
+				list.forEach(message -> messageService.queryAndUpdateSendStatus(message, channelSMSService));
+			}
 		}
 	}
 

@@ -88,3 +88,7 @@ MODIFY COLUMN `fail_code`  varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_ge
 alter table t_batch_message change appId app_id tinyint not null COMMENT '应用id';
 alter table t_message change recive_date receive_date timestamp null comment '收到短信时间';
 
+ALTER TABLE `t_message`
+ADD COLUMN `channel`  varchar(10) NOT NULL COMMENT '短信发送渠道' AFTER `biz_id`,
+ADD COLUMN `retry`  tinyint NULL COMMENT '重试次数' AFTER `channel`;
+UPDATE t_message set channel = 'aliyun' WHERE channel = '';

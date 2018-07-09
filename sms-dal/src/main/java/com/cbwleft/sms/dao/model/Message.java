@@ -59,6 +59,16 @@ public class Message {
     private String bizId;
 
     /**
+     * 短信发送渠道
+     */
+    private String channel;
+
+    /**
+     * 重试次数
+     */
+    private Byte retry;
+
+    /**
      * 收到短信时间
      */
     @Column(name = "receive_date")
@@ -239,6 +249,42 @@ public class Message {
     }
 
     /**
+     * 获取短信发送渠道
+     *
+     * @return channel - 短信发送渠道
+     */
+    public String getChannel() {
+        return channel;
+    }
+
+    /**
+     * 设置短信发送渠道
+     *
+     * @param channel 短信发送渠道
+     */
+    public void setChannel(String channel) {
+        this.channel = channel;
+    }
+
+    /**
+     * 获取重试次数
+     *
+     * @return retry - 重试次数
+     */
+    public Byte getRetry() {
+        return retry;
+    }
+
+    /**
+     * 设置重试次数
+     *
+     * @param retry 重试次数
+     */
+    public void setRetry(Byte retry) {
+        this.retry = retry;
+    }
+
+    /**
      * 获取收到短信时间
      *
      * @return receive_date - 收到短信时间
@@ -307,6 +353,8 @@ public class Message {
         sb.append(", validateStatus=").append(validateStatus);
         sb.append(", failCode=").append(failCode);
         sb.append(", bizId=").append(bizId);
+        sb.append(", channel=").append(channel);
+        sb.append(", retry=").append(retry);
         sb.append(", receiveDate=").append(receiveDate);
         sb.append(", createDate=").append(createDate);
         sb.append(", updateDate=").append(updateDate);
@@ -335,6 +383,8 @@ public class Message {
             && (this.getValidateStatus() == null ? other.getValidateStatus() == null : this.getValidateStatus().equals(other.getValidateStatus()))
             && (this.getFailCode() == null ? other.getFailCode() == null : this.getFailCode().equals(other.getFailCode()))
             && (this.getBizId() == null ? other.getBizId() == null : this.getBizId().equals(other.getBizId()))
+            && (this.getChannel() == null ? other.getChannel() == null : this.getChannel().equals(other.getChannel()))
+            && (this.getRetry() == null ? other.getRetry() == null : this.getRetry().equals(other.getRetry()))
             && (this.getReceiveDate() == null ? other.getReceiveDate() == null : this.getReceiveDate().equals(other.getReceiveDate()))
             && (this.getCreateDate() == null ? other.getCreateDate() == null : this.getCreateDate().equals(other.getCreateDate()))
             && (this.getUpdateDate() == null ? other.getUpdateDate() == null : this.getUpdateDate().equals(other.getUpdateDate()));
@@ -353,6 +403,8 @@ public class Message {
         result = prime * result + ((getValidateStatus() == null) ? 0 : getValidateStatus().hashCode());
         result = prime * result + ((getFailCode() == null) ? 0 : getFailCode().hashCode());
         result = prime * result + ((getBizId() == null) ? 0 : getBizId().hashCode());
+        result = prime * result + ((getChannel() == null) ? 0 : getChannel().hashCode());
+        result = prime * result + ((getRetry() == null) ? 0 : getRetry().hashCode());
         result = prime * result + ((getReceiveDate() == null) ? 0 : getReceiveDate().hashCode());
         result = prime * result + ((getCreateDate() == null) ? 0 : getCreateDate().hashCode());
         result = prime * result + ((getUpdateDate() == null) ? 0 : getUpdateDate().hashCode());

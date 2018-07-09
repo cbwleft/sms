@@ -36,4 +36,10 @@ public interface IChannelSMSService {
 	 */
 	SendMessageResult batchSend(App app, String[] mobile, String content) throws ChannelException;
 
+	/**
+	 * 获取短信渠道名称
+	 * @return
+	 */
+	String getChannel();
+
 }

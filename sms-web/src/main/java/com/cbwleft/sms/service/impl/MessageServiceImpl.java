@@ -46,28 +46,28 @@ public class MessageServiceImpl implements IMessageService {
 
 	@Autowired
 	private AppMapper appMapper;
-	
+
 	@Autowired
 	private TemplateMapper templateMapper;
 
 	@Autowired
 	private MessageMapper messageMapper;
-	
+
 	@Autowired
 	private BatchMessageMapper batchMessageMapper;
 
 	@Autowired
-	private IChannelSMSService channelSMSService;
-	
+	private ChannelSMSServices channelSMSServices;
+
 	@Autowired
 	private SMSHealthIndicator smsHealthIndicator;
-	
+
 	@Autowired
 	private StringRedisTemplate stringRedisTemplate;
-	
+
 	@Autowired
 	private RedisTemplate<String, Object> redisTemplate;
-	
+
 	private static final int BATCH_MESSAGE_COUNT = 500;
 
 	@Override
@@ -80,7 +80,7 @@ public class MessageServiceImpl implements IMessageService {
 		if (app == null) {
 			throw new BaseException(BaseResultEnum.APP_NOT_EXIST);
 		}
-		
+
 		Map<String, Object> params = messageDTO.getParams();
 		String validateCodeKey = template.getValidateCodeKey();
 		Short validateCodeExpire = template.getValidateCodeExpire();
@@ -101,15 +101,27 @@ public class MessageServiceImpl implements IMessageService {
 				messageDTO.setParams(paramsWithValidateCode);
 			}
 		}
-		
+
 		logger.info("开始发送短信:{}", template);
+		Iterator<IChannelSMSService> iterator = channelSMSServices.iterator();
 		SendMessageResult result;
-		try {
-			result = channelSMSService.send(app, template, messageDTO);
-		} catch (ChannelException e) {
-			logger.error("渠道短信发送异常", e);
-			result = new SendMessageResult(e.getMessage());
-		}
+		byte retry = 0;
+		String channel;
+		do {
+			IChannelSMSService channelSMSService =iterator.next();
+			channel = channelSMSService.getChannel();
+			try {
+				result = channelSMSService.send(app, template, messageDTO);
+				break;
+			} catch (ChannelException e) {
+				logger.error("渠道短信发送异常", e);
+				result = new SendMessageResult(e.getMessage());
+				if (iterator.hasNext()) {
+					retry ++;
+				}
+			}
+		} while (iterator.hasNext());
+
 		try {
 			Message message = new Message();
 			message.setMobile(messageDTO.getMobile());
@@ -121,7 +133,11 @@ public class MessageServiceImpl implements IMessageService {
 				message.setSendStatus(Columns.SendStatus.FAILURE);
 				message.setFailCode(result.getFailCode());
 			}
+			if (retry > 0) {
+				message.setRetry(retry);
+			}
 			message.setBizId(result.getBizId());
+			message.setChannel(channel);
 			message.setValidateCode(validateCode);
 			message.setValidateStatus(Columns.ValidateStatus.NO);
 			Date now = new Date();
@@ -148,9 +164,9 @@ public class MessageServiceImpl implements IMessageService {
 		int result = new Random().nextInt(9 * base) + base;
 		return String.valueOf(result);
 	}
-	
+
 	@Override
-	public QuerySendResult queryAndUpdateSendStatus(Message message) {
+	public QuerySendResult queryAndUpdateSendStatus(Message message, IChannelSMSService channelSMSService) {
 		Template template = templateMapper.selectByPrimaryKey(message.getTemplateId());
 		App app = appMapper.selectByPrimaryKey(template.getAppId());
 		QuerySendResult querySendResult = channelSMSService.querySendStatus(app, message);
@@ -230,7 +246,7 @@ public class MessageServiceImpl implements IMessageService {
 		PageHelper.startPage(1, 1, false);
 		return messageMapper.selectOneByExample(example);
 	}
-	
+
 	@Override
 	public Message queryMessage(String mobile, String bizId) {
 		Message message = new Message();
@@ -238,7 +254,7 @@ public class MessageServiceImpl implements IMessageService {
 		message.setMobile(mobile);
 		return messageMapper.selectOne(message);
 	}
-	
+
 	@Override
 	public int updateMessageSendStatus(Message message, QuerySendResult querySendResult) {
 		Message updateMessage = new Message();
@@ -246,7 +262,7 @@ public class MessageServiceImpl implements IMessageService {
 		updateMessage.setSendStatus(querySendResult.getSendStatus());
 		if (Columns.SendStatus.FAILURE == querySendResult.getSendStatus()) {
 			updateMessage.setFailCode(querySendResult.getFailCode());
-		} else if(Columns.SendStatus.SUCCESS == querySendResult.getSendStatus()) {
+		} else if (Columns.SendStatus.SUCCESS == querySendResult.getSendStatus()) {
 			updateMessage.setReceiveDate(querySendResult.getReceiveDate());
 		}
 		int result = messageMapper.updateByPrimaryKeySelective(updateMessage);
@@ -256,10 +272,11 @@ public class MessageServiceImpl implements IMessageService {
 	}
 
 	@Override
-	public List<Message> querySendingMessages(Date fromDate) {
+	public List<Message> querySendingMessages(Date fromDate, String channel) {
 		Example example = new Example.Builder(Message.class)
 				.where(WeekendSqls.<Message>custom()
 						.andEqualTo(Message::getSendStatus, Columns.SendStatus.SENDING)
+						.andEqualTo(Message::getChannel, channel)
 						.andGreaterThan(Message::getCreateDate, fromDate))
 				.orderByDesc("id")
 				.build();
@@ -279,9 +296,10 @@ public class MessageServiceImpl implements IMessageService {
 		int from = 0, to = 0;
 		while (to < mobileList.size()) {
 			to = to + BATCH_MESSAGE_COUNT > mobileList.size() ? mobileList.size() : to + BATCH_MESSAGE_COUNT;
-			String [] mobileArray = mobileList.subList(from, to).toArray(new String[0]);
+			String[] mobileArray = mobileList.subList(from, to).toArray(new String[0]);
 			from = to;
 			SendMessageResult sendMessageResult;
+			IChannelSMSService channelSMSService = channelSMSServices.getBatchSendable();
 			try {
 				sendMessageResult = channelSMSService.batchSend(app, mobileArray, batchMessageDTO.getContent());
 			} catch (ChannelException e) {
@@ -312,20 +330,20 @@ public class MessageServiceImpl implements IMessageService {
 					redisKey = RedisKeys.BATCH_MESSAGE_FAILURE.format(batchMessage.getId());
 				}
 				long add = stringRedisTemplate.opsForSet().add(redisKey, mobileArray);
-				logger.info("{}集合新增:{}", redisKey, add) ;
+				logger.info("{}集合新增:{}", redisKey, add);
 			} catch (Exception e) {
 				logger.error("插入BatchMessage数据异常" + batchMessageDTO, e);
 			}
 		}
 	}
-	
+
 	@Override
 	public BatchMessage queryBatchMessage(String bizId) {
 		BatchMessage batchMessage = new BatchMessage();
 		batchMessage.setBizId(bizId);
 		return batchMessageMapper.selectOne(batchMessage);
 	}
-	
+
 	@Override
 	public int updateBatchMessageCount(int id, short sending, short success, short failure) {
 		BatchMessage batchMessage = new BatchMessage();

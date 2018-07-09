@@ -14,7 +14,6 @@ import com.cbwleft.sms.exception.ChannelException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -24,7 +23,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import com.cbwleft.sms.config.LinkSMSConfig;
-import com.cbwleft.sms.constant.ConfigConstants;
+import com.cbwleft.sms.constant.Channels;
 import com.cbwleft.sms.dao.constant.Columns;
 import com.cbwleft.sms.dao.constant.RedisKeys;
 import com.cbwleft.sms.dao.model.App;
@@ -37,8 +36,7 @@ import com.cbwleft.sms.model.dto.SendMessageResult;
 import com.cbwleft.sms.service.IBatchQueryable;
 import com.cbwleft.sms.service.IMessageService;
 
-@Service
-@Profile(ConfigConstants.LINK_SMS)
+@Service(Channels.LINK_SMS)
 public class LinkSMSServiceImpl implements IBatchQueryable {
 
 	private static final Logger logger = LoggerFactory.getLogger(LinkSMSServiceImpl.class);
@@ -205,6 +203,11 @@ public class LinkSMSServiceImpl implements IBatchQueryable {
 		} catch (Exception e) {
 			throw new ChannelException(e);
 		}
+	}
+
+	@Override
+	public String getChannel() {
+		return Channels.LINK_SMS;
 	}
 
 }

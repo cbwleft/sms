@@ -53,16 +53,18 @@ public interface IMessageService {
 	/**
 	 * 查询并更新发送状态
 	 * @param message
+	 * @param channelSMSService
 	 * @return
 	 */
-	QuerySendResult queryAndUpdateSendStatus(Message message);
+	QuerySendResult queryAndUpdateSendStatus(Message message, IChannelSMSService channelSMSService);
 
 	/**
 	 * 查询发送中的短信
 	 * @param fromDate 查询该时间点之后的数据
+	 * @param channel 短信渠道
 	 * @return
 	 */
-	List<Message> querySendingMessages(Date fromDate);
+	List<Message> querySendingMessages(Date fromDate, String channel);
 
 	/**
 	 * 根据手机号和第三方id查询短信

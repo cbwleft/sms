@@ -1,5 +1,34 @@
 package com.cbwleft.sms.service.impl;
 
+import com.aliyuncs.IAcsClient;
+import com.aliyuncs.dysmsapi.model.v20170525.QuerySendDetailsRequest;
+import com.aliyuncs.dysmsapi.model.v20170525.QuerySendDetailsResponse;
+import com.aliyuncs.dysmsapi.model.v20170525.QuerySendDetailsResponse.SmsSendDetailDTO;
+import com.aliyuncs.dysmsapi.model.v20170525.SendSmsRequest;
+import com.aliyuncs.dysmsapi.model.v20170525.SendSmsResponse;
+import com.aliyuncs.exceptions.ClientException;
+import com.aliyuncs.http.MethodType;
+import com.cbwleft.sms.constant.BaseResultEnum;
+import com.cbwleft.sms.constant.Channels;
+import com.cbwleft.sms.dao.constant.Columns;
+import com.cbwleft.sms.dao.model.App;
+import com.cbwleft.sms.dao.model.Message;
+import com.cbwleft.sms.dao.model.Template;
+import com.cbwleft.sms.exception.AmountNotEnoughException;
+import com.cbwleft.sms.exception.BaseException;
+import com.cbwleft.sms.exception.ChannelException;
+import com.cbwleft.sms.model.dto.MessageDTO;
+import com.cbwleft.sms.model.dto.QuerySendResult;
+import com.cbwleft.sms.model.dto.SendMessageResult;
+import com.cbwleft.sms.service.IChannelSMSService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
@@ -7,39 +36,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import com.aliyuncs.exceptions.ClientException;
-import com.cbwleft.sms.constant.BaseResultEnum;
-import com.cbwleft.sms.exception.AmountNotEnoughException;
-import com.cbwleft.sms.exception.BaseException;
-import com.cbwleft.sms.exception.ChannelException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
-import com.aliyuncs.IAcsClient;
-import com.aliyuncs.dysmsapi.model.v20170525.QuerySendDetailsRequest;
-import com.aliyuncs.dysmsapi.model.v20170525.QuerySendDetailsResponse;
-import com.aliyuncs.dysmsapi.model.v20170525.QuerySendDetailsResponse.SmsSendDetailDTO;
-import com.aliyuncs.dysmsapi.model.v20170525.SendSmsRequest;
-import com.aliyuncs.dysmsapi.model.v20170525.SendSmsResponse;
-import com.aliyuncs.http.MethodType;
-import com.cbwleft.sms.constant.ConfigConstants;
-import com.cbwleft.sms.dao.constant.Columns;
-import com.cbwleft.sms.dao.model.App;
-import com.cbwleft.sms.dao.model.Message;
-import com.cbwleft.sms.dao.model.Template;
-import com.cbwleft.sms.model.dto.MessageDTO;
-import com.cbwleft.sms.model.dto.QuerySendResult;
-import com.cbwleft.sms.model.dto.SendMessageResult;
-import com.cbwleft.sms.service.IChannelSMSService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-@Service
-@Profile(ConfigConstants.ALI_SMS)
+@Service(Channels.ALI_SMS)
 public class AliSMSServiceImpl implements IChannelSMSService {
 
 
@@ -149,6 +146,11 @@ public class AliSMSServiceImpl implements IChannelSMSService {
 	@Override
 	public SendMessageResult batchSend(App app, String[] mobile, String content) {
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public String getChannel() {
+		return Channels.ALI_SMS;
 	}
 
 }

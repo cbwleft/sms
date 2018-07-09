@@ -1,10 +1,10 @@
 package com.cbwleft.sms.constant;
 
 /**
- * 配置文件常量
+ * 短信渠道文件常量
  * @author cbwleft
  */
-public class ConfigConstants {
+public class Channels {
 	
 	public static final String ALI_SMS = "aliyun";
 	
