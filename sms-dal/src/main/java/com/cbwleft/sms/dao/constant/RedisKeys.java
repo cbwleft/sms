@@ -8,7 +8,8 @@ public enum RedisKeys {
 	BATCH_MESSAGE_SUCCESS("sms:batch_message:{0}:success"),
 	BATCH_MESSAGE_FAILURE("sms:batch_message:{0}:failure"),
 	
-	VALIDATE_CODE_MESSAGE("sms:message:{0}:{1}:latest");
+	VALIDATE_CODE_MESSAGE("sms:message:{0}:{1}:latest"),
+	VALIDATE_RETRY("sms:message:{0}:{1}:retry");
 	
 	private String pattern;
 

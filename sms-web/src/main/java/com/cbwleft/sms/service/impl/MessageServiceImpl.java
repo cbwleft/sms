@@ -188,25 +188,30 @@ public class MessageServiceImpl implements IMessageService {
 		if (app == null) {
 			throw new BaseException(BaseResultEnum.APP_NOT_EXIST);
 		}
-		String redisKey = RedisKeys.VALIDATE_CODE_MESSAGE.format(validateDTO.getMobile(), template.getId());
-		Message message = (Message) redisTemplate.opsForValue().get(redisKey);
-		//Message message = queryLatestMessage(validateDTO.getMobile(), template);
+		String messageRedisKey = RedisKeys.VALIDATE_CODE_MESSAGE.format(validateDTO.getMobile(), template.getId());
+		String retryRedisKey = RedisKeys.VALIDATE_RETRY.format(validateDTO.getMobile(), template.getId());
+		Message message = (Message) redisTemplate.opsForValue().get(messageRedisKey);
 		if (message == null) {
 			logger.debug("验证码已过期");
-			return false;
-		}
-		if (!redisTemplate.delete(redisKey)) {
-			logger.info("并发验证短信验证码或者验证码已过期");
 			return false;
 		}
 		String validateCode = message.getValidateCode();
 		if (!validateCode.equals(validateDTO.getValidateCode())) {
 			logger.debug("验证码错误");
+			long retry = redisTemplate.opsForValue().increment(retryRedisKey, 1);
+			redisTemplate.expire(retryRedisKey, 1, TimeUnit.MINUTES);
+			if (retry > 3) {
+				logger.info("验证码重试次数过多，强制失效");
+				redisTemplate.delete(retryRedisKey);
+				redisTemplate.delete(messageRedisKey);
+			}
 			return false;
 		}
 		try {
 			int result = updateMessageValidateStatus(message);
 			if (result > 0) {
+				redisTemplate.delete(retryRedisKey);
+				redisTemplate.delete(messageRedisKey);
 				return true;
 			} else {
 				logger.warn("并发验证短信验证码");
